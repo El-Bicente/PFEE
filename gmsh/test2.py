@@ -22,6 +22,8 @@ gmsh.view.addModelData(node_tag, 0, "test", "NodeData", [1, 2, 3], [[92], [42], 
 face_tag = gmsh.view.add("Faces")
 gmsh.view.addModelData(face_tag, 0, "test", "ElementData", [1], [[150]])
 
+gmsh.view.write(node_tag, 'out.msh')
+
 if '-nopopup' not in sys.argv:
     gmsh.fltk.run()
 

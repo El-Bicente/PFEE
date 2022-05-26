@@ -1,0 +1,50 @@
+$MeshFormat
+4.1 0 8
+$EndMeshFormat
+$Entities
+0 0 1 0
+1 0 0 0 1 1 0 0 0 
+$EndEntities
+$Nodes
+1 3 1 3
+2 1 0 3
+1
+2
+3
+0 0 0
+1 0 0
+0 1 0
+$EndNodes
+$Elements
+1 1 1 1
+2 1 2 1
+1 1 2 3 
+$EndElements
+$InterpolationScheme
+"INTERPOLATION_SCHEME"
+1
+3
+2
+3 3
+1 -1 -1 
+0 1 0 
+0 0 1 
+3 2
+0 0 
+1 0 
+0 1 
+$EndInterpolationScheme
+$NodeData
+1
+"Nodes"
+1
+0
+4
+0
+1
+3
+0
+1 92
+2 42
+3 57
+$EndNodeData
