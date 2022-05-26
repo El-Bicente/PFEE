@@ -5,5 +5,3 @@ dependencies:
   - python=3.9.12
   - numpy
   - pip
-  - pandas
-  - vtk

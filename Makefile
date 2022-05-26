@@ -2,7 +2,7 @@
 
 SHELL = /bin/bash
 CONDA_ACTIVATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate pfee; conda activate pfee;
-CONDA_DEACTIVATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda deactivate;
+CONDA_DEACTIVATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda deactivate; conda deactivate;
 CONDA_CREATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda env create -f environment.yml;
 CONDA_ENV_REMOVE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda env remove -n pfee;
 
