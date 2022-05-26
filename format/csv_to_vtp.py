@@ -27,7 +27,7 @@ def main():
     faces = pd.read_csv("faces_split_ex2.csv")
     points = pd.read_csv("points_ex2.csv")
     lines = pd.read_csv("lines_ex2.csv")
-
+    
     vtk_poly = vtk.vtkPolyData()
 
     vtk_pts = vtk.vtkPoints()
@@ -42,11 +42,51 @@ def main():
     vtk_poly.SetPolys(vtk_cells)
     vtk_poly.SetLines(vtk_lines)
 
+    vectors = vtk.vtkDoubleArray()
+    vectors.SetNumberOfTuples(5)
+    vectors.SetName("Vector Field")
+    vectors.SetNumberOfComponents(3)
+    vectors.SetTuple3(0,1,1,10)
+
+    vtk_poly.GetPointData().AddArray(vectors)
+    vtk_poly.GetPointData().SetActiveVectors("Vector Field")
+
+    arrow_source = vtk.vtkArrowSource()
+
+    add_arrows = vtk.vtkGlyph3D()
+    add_arrows.SetInputData(vtk_poly)
+    add_arrows.SetSourceConnection(arrow_source.GetOutputPort())
+    add_arrows.Update()
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(add_arrows.GetOutputPort())
+    """
+    array = vtk.vtkDoubleArray()
+    array.SetNumberOfComponents(3)
+    array.SetName("Three Components")
+    array.SetNumberOfTuples(300)
+    for i in range(300):
+        array.SetTuple3(i,1,1,10)
+
+    vtk_poly.GetPointData().SetVectors(array)
+    vtk_poly.GetPointData().SetActiveVectors("Three Components")
+
+    arrow = vtk.vtkArrowSource()
+    arrow.Update()
+
+    glyph = vtk.vtkGlyph3D()
+    arrowSize=0.02
+    glyph.SetScaleFactor(arrowSize)
+    glyph.SetSourceData(arrow.GetOutput())
+    glyph.SetInputData(vtk_poly)
+    glyph.SetVectorModeToUseNormal()
+    glyph.Update()
+    """
     writer = vtk.vtkXMLPolyDataWriter()
     writer.SetFileName('output.vtp')
     writer.SetInputData(vtk_poly)
 
-    writer.Write()
 
+    writer.Write()
 if __name__ == "__main__":
     main()
