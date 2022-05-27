@@ -1,8 +1,33 @@
 import vtk
 import pandas as pd
 
+def build_point_weights(vtk_poly, points):
+    pointWeights = vtk.vtkDoubleArray()
+    pointWeights.SetName("Weight")
+
+    points.apply(lambda x: pointWeights.InsertNextValue(int(x[4])), axis = 1)
+
+    vtk_poly.GetPointData().SetScalars(pointWeights)
+
+def build_lines_weights(vtk_poly, lines):
+    lineWeights = vtk.vtkDoubleArray()
+    lineWeights.SetName("Weight")
+
+    lines.apply(lambda x: lineWeights.InsertNextValue(int(x[2])), axis = 1)
+
+    vtk_poly.GetLineData().SetScalars(lineWeights)
+
+def build_cell_weights(vtk_poly, cells):
+    cellWeights = vtk.vtkDoubleArray()
+    cellWeights.SetName("Weight")
+
+    cells.apply(lambda x: cellWeights.InsertNextValue(int(x[3])), axis = 1)
+
+    vtk_poly.GetCellData().SetScalars(cellWeights)
+
 def init_points(vtk_pts, points):
     points.apply(lambda x: vtk_pts.InsertPoint(int(x[0]), x[1], x[2], x[3]), axis = 1)
+
 
 def build_line(points):
     line = vtk.vtkLine()
@@ -47,6 +72,10 @@ def build_mesh(faces, points, lines):
     vtk_poly.SetPoints(vtk_pts)
     vtk_poly.SetPolys(vtk_cells)
     vtk_poly.SetLines(vtk_lines)
+ 
+    build_point_weights(vtk_poly, points)
+    # build_lines_weights(vtk_poly, lines)
+    # build_cell_weights(vtk_poly, faces)
 
     writer = vtk.vtkXMLPolyDataWriter()
     writer.SetFileName('output.vtp')
@@ -77,9 +106,9 @@ def build_glyph(vectors_pts, vectors_dir):
     writer.Write()
 
 def main():
-    faces = pd.read_csv("faces_split_ex2.csv")
-    points = pd.read_csv("points_ex2.csv")
-    lines = pd.read_csv("lines_ex2.csv")
+    faces = pd.read_csv("cells.csv")
+    points = pd.read_csv("points.csv")
+    lines = pd.read_csv("lines.csv")
     
     vectors_pts = pd.read_csv("vectors.csv")
     vectors_dir = pd.read_csv("vectors_dir.csv")
