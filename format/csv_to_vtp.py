@@ -1,36 +1,35 @@
 import vtk
 import pandas as pd
 
-def build_point_weights(vtk_poly, points):
+def build_point_weights(vtk_ungrid, points):
     pointWeights = vtk.vtkDoubleArray()
     pointWeights.SetName("PointWeight")
     pointWeights.SetNumberOfComponents(1)
-    pointWeights.SetNumberOfTuples(vtk_poly.GetNumberOfPoints())
+    pointWeights.SetNumberOfTuples(vtk_ungrid.GetNumberOfPoints())
 
     points.apply(lambda x: pointWeights.SetTuple1(int(x[0]), x[4]), axis = 1)
     return pointWeights
 
-def build_face_weights(vtk_poly, cells, name, cell_number, start):
+def build_face_weights(vtk_ungrid, cells, name, cell_number, start):
     cellWeights = vtk.vtkDoubleArray()
     cellWeights.SetName(name)
     cellWeights.SetNumberOfComponents(1)
-    cellWeights.SetNumberOfTuples(vtk_poly.GetNumberOfCells())
+    cellWeights.SetNumberOfTuples(vtk_ungrid.GetNumberOfCells())
 
-    cells.apply(lambda x: cellWeights.SetTuple1(start + int(x[0]), x[1]), axis = 1)
-    
+    cells.apply(lambda x: cellWeights.SetTuple1(int(x[0]), x[1]), axis = 1)
+
     for i in range(0, start):
         cellWeights.SetTuple1(int(i), float("nan"))
     return cellWeights
 
-def build_line_weights(vtk_poly, cells, name, cell_number, start):
+def build_line_weights(vtk_ungrid, cells, name, cell_number, start):
     cellWeights = vtk.vtkDoubleArray()
     cellWeights.SetName(name)
     cellWeights.SetNumberOfComponents(1)
-    cellWeights.SetNumberOfTuples(vtk_poly.GetNumberOfCells())
-
+    cellWeights.SetNumberOfTuples(vtk_ungrid.GetNumberOfCells())
     cells.apply(lambda x: cellWeights.SetTuple1(int(x[0]), x[1]), axis = 1)
 
-    for i in range(start + cell_number, vtk_poly.GetNumberOfCells()):
+    for i in range(start + cell_number, vtk_ungrid.GetNumberOfCells()):
         cellWeights.SetTuple1(int(i), float("nan"))
     return cellWeights
 
@@ -63,73 +62,89 @@ def init_faces(vtk_cells, faces):
     """
     return faces.apply(lambda x: pd.Series({"ID": vtk_cells.InsertNextCell(build_cell(x)), "Weight": x[3]}), axis = 1)
 
-def build_vectors(vtk_poly_glyph, vectors_dir):
+def get_vtypes(nb_lines, nb_cells):
+    vtypes = vtk.vtkUnsignedCharArray()
+    vtypes.SetNumberOfComponents(1)
+    vtypes.SetNumberOfTuples(nb_lines + nb_cells)
+    for i in range(nb_lines):
+        vtypes.SetTuple1(i , vtk.VTK_LINE)
+    for i in range(nb_lines, nb_lines + nb_cells):
+        vtypes.SetTuple1(i , vtk.VTK_TRIANGLE)
+
+    return vtypes
+
+def build_vectors(vtk_ungrid_glyph, vectors_dir):
     vectors = vtk.vtkDoubleArray()
     vectors.SetName("Vector Field")
     vectors.SetNumberOfComponents(3)
-    vectors.SetNumberOfTuples(vtk_poly_glyph.GetNumberOfPoints())
+    vectors.SetNumberOfTuples(vtk_ungrid_glyph.GetNumberOfPoints())
     vectors_dir.apply(lambda x: vectors.SetTuple3(x[0],x[1], x[2], x[3]), axis = 1)
-    vtk_poly_glyph.GetPointData().AddArray(vectors)
-    vtk_poly_glyph.GetPointData().SetActiveVectors("Vector Field")
+    vtk_ungrid_glyph.GetPointData().AddArray(vectors)
+    vtk_ungrid_glyph.GetPointData().SetActiveVectors("Vector Field")
 
 def build_mesh(faces, points, lines):
-    vtk_poly = vtk.vtkPolyData()
+    vtk_ungrid = vtk.vtkUnstructuredGrid()
 
     vtk_pts = vtk.vtkPoints()
     vtk_cells = vtk.vtkCellArray()
-    vtk_lines = vtk.vtkCellArray()
+
 
     init_points(vtk_pts, points)
-    lines_weight = init_lines(vtk_lines, lines)
+    nb_lines = lines.shape[0]
+    nb_cells = faces.shape[0]
+    lines_weight = init_lines(vtk_cells, lines)
     faces_weight = init_faces(vtk_cells, faces)
+    vtypes = get_vtypes(nb_lines, nb_cells)
 
-    vtk_poly.SetPoints(vtk_pts)
-    vtk_poly.SetPolys(vtk_cells)
-    vtk_poly.SetLines(vtk_lines)
-    
-    start_line = 0
-    start_face = 0
-    for i in range(vtk_poly.GetNumberOfCells()):
-        if start_line == 0 and vtk_poly.GetCell(i).GetNumberOfPoints() == 2:
+
+    vtk_ungrid.SetPoints(vtk_pts)
+    vtk_ungrid.SetCells(vtypes, vtk_cells)
+
+    start_line = -1
+    start_face = -1
+
+    for i in range(vtk_ungrid.GetNumberOfCells()):
+        if start_line == -1 and vtk_ungrid.GetCell(i).GetNumberOfPoints() == 2:
             start_line = i
-        if start_face == 0 and vtk_poly.GetCell(i).GetNumberOfPoints() == 3:
+        if start_face == -1 and vtk_ungrid.GetCell(i).GetNumberOfPoints() == 3:
             start_face = i
 
-    vtk_pts_weight = build_point_weights(vtk_poly, points)
-    vtk_poly.GetPointData().SetScalars(vtk_pts_weight)
-    vtk_poly.GetPointData().SetActiveScalars("PointWeight")
 
-    vtk_lines_weight = build_line_weights(vtk_poly, lines_weight, "LineWeight", vtk_poly.GetNumberOfLines(), start_line)
-    vtk_poly.GetCellData().AddArray(vtk_lines_weight)
-    
-    vtk_faces_weight = build_face_weights(vtk_poly, faces_weight, "FacesWeight", vtk_poly.GetNumberOfPolys(), start_face)
-    vtk_poly.GetCellData().AddArray(vtk_faces_weight)
+    vtk_pts_weight = build_point_weights(vtk_ungrid, points)
+    vtk_ungrid.GetPointData().SetScalars(vtk_pts_weight)
+    vtk_ungrid.GetPointData().SetActiveScalars("PointWeight")
 
-    writer = vtk.vtkXMLPolyDataWriter()
-    writer.SetFileName('output.vtp')
-    writer.SetInputData(vtk_poly)
+    vtk_lines_weight = build_line_weights(vtk_ungrid, lines_weight, "LineWeight", nb_lines, start_line)
+    vtk_ungrid.GetCellData().AddArray(vtk_lines_weight)
+
+    vtk_faces_weight = build_face_weights(vtk_ungrid, faces_weight, "FacesWeight", nb_cells, start_face)
+    vtk_ungrid.GetCellData().AddArray(vtk_faces_weight)
+
+    writer = vtk.vtkXMLUnstructuredGridWriter()
+    writer.SetFileName('output.vtu')
+    writer.SetInputData(vtk_ungrid)
 
     writer.Write()
 
 def build_glyph(vectors_pts, vectors_dir):
-    vtk_poly_glyph = vtk.vtkPolyData()
+    vtk_ungrid_glyph = vtk.vtkUnstructuredGrid()
     vtk_vec_pts = vtk.vtkPoints()
 
     init_points(vtk_vec_pts, vectors_pts)
-    vtk_poly_glyph.SetPoints(vtk_vec_pts)
+    vtk_ungrid_glyph.SetPoints(vtk_vec_pts)
 
-    build_vectors(vtk_poly_glyph, vectors_dir)
+    build_vectors(vtk_ungrid_glyph, vectors_dir)
     arrow_source = vtk.vtkArrowSource()
 
     add_arrows = vtk.vtkGlyph3D()
-    add_arrows.SetInputData(vtk_poly_glyph)
+    add_arrows.SetInputData(vtk_ungrid_glyph)
     add_arrows.SetSourceConnection(arrow_source.GetOutputPort())
     add_arrows.Update()
 
-    writer = vtk.vtkXMLPolyDataWriter()
+    writer = vtk.vtkXMLUnstructuredGridWriter()
     writer.SetInputConnection(add_arrows.GetOutputPort())
-    writer.SetFileName('output2.vtp')
-    writer.SetInputData(vtk_poly_glyph)
+    writer.SetFileName('output2.vtu')
+    writer.SetInputData(vtk_ungrid_glyph)
 
     writer.Write()
 
