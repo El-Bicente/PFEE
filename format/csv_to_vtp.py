@@ -10,27 +10,21 @@ def build_point_weights(vtk_ungrid, points):
     points.apply(lambda x: pointWeights.SetTuple1(int(x[0]), x[4]), axis = 1)
     return pointWeights
 
-def build_face_weights(vtk_ungrid, cells, name, cell_number, start):
+def build_face_weights(vtk_ungrid, cells, name):
     cellWeights = vtk.vtkDoubleArray()
     cellWeights.SetName(name)
     cellWeights.SetNumberOfComponents(1)
     cellWeights.SetNumberOfTuples(vtk_ungrid.GetNumberOfCells())
 
     cells.apply(lambda x: cellWeights.SetTuple1(int(x[0]), x[1]), axis = 1)
-
-    for i in range(0, start):
-        cellWeights.SetTuple1(int(i), float("nan"))
     return cellWeights
 
-def build_line_weights(vtk_ungrid, cells, name, cell_number, start):
+def build_line_weights(vtk_ungrid, cells, name):
     cellWeights = vtk.vtkDoubleArray()
     cellWeights.SetName(name)
     cellWeights.SetNumberOfComponents(1)
     cellWeights.SetNumberOfTuples(vtk_ungrid.GetNumberOfCells())
     cells.apply(lambda x: cellWeights.SetTuple1(int(x[0]), x[1]), axis = 1)
-
-    for i in range(start + cell_number, vtk_ungrid.GetNumberOfCells()):
-        cellWeights.SetTuple1(int(i), float("nan"))
     return cellWeights
 
 def init_points(vtk_pts, points):
@@ -88,36 +82,28 @@ def build_mesh(faces, points, lines):
     vtk_pts = vtk.vtkPoints()
     vtk_cells = vtk.vtkCellArray()
 
-
     init_points(vtk_pts, points)
     nb_lines = lines.shape[0]
     nb_cells = faces.shape[0]
     lines_weight = init_lines(vtk_cells, lines)
     faces_weight = init_faces(vtk_cells, faces)
-    vtypes = get_vtypes(nb_lines, nb_cells)
 
+    vtypes = get_vtypes(nb_lines, nb_cells)
 
     vtk_ungrid.SetPoints(vtk_pts)
     vtk_ungrid.SetCells(vtypes, vtk_cells)
 
-    start_line = -1
-    start_face = -1
-
-    for i in range(vtk_ungrid.GetNumberOfCells()):
-        if start_line == -1 and vtk_ungrid.GetCell(i).GetNumberOfPoints() == 2:
-            start_line = i
-        if start_face == -1 and vtk_ungrid.GetCell(i).GetNumberOfPoints() == 3:
-            start_face = i
-
+    faces_weight = faces_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
+    lines_weight = lines_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
 
     vtk_pts_weight = build_point_weights(vtk_ungrid, points)
     vtk_ungrid.GetPointData().SetScalars(vtk_pts_weight)
     vtk_ungrid.GetPointData().SetActiveScalars("PointWeight")
 
-    vtk_lines_weight = build_line_weights(vtk_ungrid, lines_weight, "LineWeight", nb_lines, start_line)
+    vtk_lines_weight = build_line_weights(vtk_ungrid, lines_weight, "LineWeight")
     vtk_ungrid.GetCellData().AddArray(vtk_lines_weight)
 
-    vtk_faces_weight = build_face_weights(vtk_ungrid, faces_weight, "FacesWeight", nb_cells, start_face)
+    vtk_faces_weight = build_face_weights(vtk_ungrid, faces_weight, "FacesWeight")
     vtk_ungrid.GetCellData().AddArray(vtk_faces_weight)
 
     writer = vtk.vtkXMLUnstructuredGridWriter()
