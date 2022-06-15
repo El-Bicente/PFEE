@@ -3,7 +3,7 @@ graph LR
 
     S[("Simplicial valué (.csv)")]:::data
     S --> PAR
-    S -- "ajout des faces" --> VTP
+    S -- "ajout des faces" --> VTU
     
     PAR[["parser (c++)"]]
     PAR --> R
@@ -12,17 +12,17 @@ graph LR
     subgraph "Revaluation (c++)"
         R[Calcul du champ de gradient]   
     end
-    R -- "ajout du champ de gradient n°1" --> VTP
+    R -- "ajout du champ de gradient n°1" --> VTU
     
     subgraph "Higra (c++)"
         M["Calcul de la MSF"]
     end
-    M -- "ajout du champ de gradient n°2" --> VTP
+    M -- "ajout du champ de gradient n°2" --> VTU
     
     subgraph "VTK (c++)"
-        VTP["Création des fichiers .vtp"]
+        VTU["Création des fichiers .vtu"]
     end
-    VTP --> SC
+    VTU --> SC
     
     subgraph "Paraview"
         SC{{"Script Python pour <br /> configurer la scène"}}
