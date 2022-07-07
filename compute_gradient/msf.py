@@ -4,48 +4,15 @@ class Graph:
     def __init__(self, vertices):
         self.V = len(vertices)
         self.vertices_weight = vertices
-        self.graph = []
+        self.adjlist = [[] for i in range(self.V)]
 
     def add_edge(self, u, v, w):
-        self.graph.append([u, v, w])
+        if (v,w) not in self.adjlist[u]:
+            self.adjlist[u].append((v, w))
 
-    def find(self, parent, i):
-        if parent[i] == i:
-            return i
-        return self.find(parent, parent[i])
+        if (u,w) not in self.adjlist[v]:
+            self.adjlist[v].append((u, w))
 
-    def apply_union(self, parent, rank, x, y):
-        xroot = self.find(parent, x)
-        yroot = self.find(parent, y)
-        if rank[xroot] < rank[yroot]:
-            parent[xroot] = yroot
-        elif rank[xroot] > rank[yroot]:
-            parent[yroot] = xroot
-        else:
-            parent[yroot] = xroot
-            rank[xroot] += 1
-
-    def msf(self):
-        result = []
-        i, e = 0, 0
-        self.graph = sorted(self.graph, key=lambda item: item[2])
-        parent = []
-        rank = []
-        for node in range(self.V):
-            parent.append(node)
-            rank.append(0)
-        while e < self.V - 1:
-            u, v, w = self.graph[i]
-            i = i + 1
-            x = self.find(parent, u)
-            y = self.find(parent, v)
-            if x != y:
-                e = e + 1
-                result.append([u, v, w])
-                self.apply_union(parent, rank, x, y)
-        for u, v, weight in result:
-            print("%d - %d: %d" % (u, v, weight))
-    
     # def revaluation(self):
     #     G = dual(K)
     #     F_prime = F
@@ -53,24 +20,38 @@ class Graph:
     #     G_past = subgraph(G)
 
     #     for l in N
-        
 
+def pairing(u, v):
+    return round(0.5 * (u + v) * (u + v + 1) + v)
 
+def dual(graph):
+    new_adjlist = []
+    labels = []
+    weights = []
 
-g = Graph([2,4,5,6,7,1])
-g.add_edge(0, 1, 4)
+    adjlist = graph.adjlist.copy()
+    for u, neighbors in enumerate(adjlist):
+        for v, weight in neighbors:
+            for w, weight2 in graph.adjlist[v]:
+                if not pairing(u, v) in labels:
+                    labels.append(pairing(u, v))
+                    weights.append(weight)
+
+                if not pairing(v, w) in labels:
+                    labels.append(pairing(v, w))
+                    weights.append(weight2)
+
+                new_adjlist.append((labels.index(pairing(u, v)), labels.index(pairing(v, w)), graph.vertices_weight[v]))
+
+    dual_graph = Graph(weights)
+    for u, v, w in new_adjlist:
+        dual_graph.add_edge(u, v, w)
+
+    return dual_graph
+
+g = Graph([6, 4, 5])
 g.add_edge(0, 2, 4)
-g.add_edge(1, 2, 2)
-g.add_edge(1, 0, 4)
-g.add_edge(2, 0, 4)
-g.add_edge(2, 1, 2)
-g.add_edge(2, 3, 3)
-g.add_edge(2, 5, 2)
-g.add_edge(2, 4, 4)
-g.add_edge(3, 2, 3)
-g.add_edge(3, 4, 3)
-g.add_edge(4, 2, 4)
-g.add_edge(4, 3, 3)
-g.add_edge(5, 2, 2)
-g.add_edge(5, 4, 3)
-g.msf()
+g.add_edge(1, 0, 8)
+
+print(dual(g).adjlist)
+#print(g.adjlist)
