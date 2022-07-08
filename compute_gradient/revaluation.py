@@ -1,11 +1,11 @@
 from dual import get_edge_weighted_dual_graph
-from minima import get_minimas, get_subgraph_from_minimas
+from minima import get_minimas, get_subgraph_from_simplices
 from graph import Graph
 
 def revaluation(graph: Graph):
     dual_graph = get_edge_weighted_dual_graph(graph)
     visited_simplices = get_minimas(dual_graph)
-    dual_subgraph = get_subgraph_from_minimas(dual_subgraph.vertex_number)
+    dual_subgraph = get_subgraph_from_simplices(dual_subgraph.vertex_number, visited_simplices)
 
     ### INIT QUEUE
     queue = []
@@ -32,4 +32,18 @@ def revaluation(graph: Graph):
     ### Propagation until the queue is empty
     count = 1
     while queue:
-        pass
+        # pop values
+        max_cost = max(queue, key = lambda elt: elt[1])[1]
+        for index, ((a, b) , cost) in enumerate(queue):
+            if max_cost == cost:
+                queue.pop(index)
+        
+        if a not in visited_simplices or b not in visited_simplices:
+            cost = b[-1] - a[-1]
+            queue.append(((a, b), cost))
+            visited_simplices.add(a)
+            visited_simplices.add(b)
+
+            # The three next lines are for pairing
+            v = count
+            count += 1
