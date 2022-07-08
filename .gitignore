@@ -12,4 +12,6 @@ ipython_config.py
 #Spicific for Othman's machine
 format/*.ipynb
 
+# trash files
 .vscode/
+__pycache__
