@@ -28,6 +28,18 @@ def get_minimas(graph: Graph):
 
     return minimas
 
+def get_subgraph_from_minimas(vertex_number: int, minimas: list[tuple]):
+    vertices = [-1 for _ in range(vertex_number)]
+    edges = []
+    for minima in minimas:
+        if len(minima) == 2:
+            vertices[minima[0]] = minima[1]
+        elif len(minima) == 3:
+            edges.append(minima)
+
+    return Graph(vertices, edges)
+
+
 ### TEST 1
 graph1 = Graph([0, 10, 5])
 graph1.add_edge(0, 2, 4)
@@ -49,3 +61,14 @@ minimas2 = get_minimas(graph2)
 assert len(minimas2) == 2
 assert minimas2[0] == (0, 0)
 assert minimas2[1] == (1, 2, 1)
+
+subgraph = get_subgraph_from_minimas(graph2.vertex_number, minimas2)
+print("============ DUAL GRAPH VERTIX WEIGHTS ============")
+for vertex, value in enumerate(subgraph.vertex_weights):
+    # f-strings are cool if you don't know it, adopt it !
+    # only available in latest versions of python
+    print(f"{vertex}: {value}")
+
+print("============ DUAL GRAPH ADJACENT LIST ============")
+for vertex, list in enumerate(subgraph.adjlist):
+    print(f"{vertex}: {list}")
