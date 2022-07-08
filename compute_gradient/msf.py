@@ -1,10 +1,13 @@
 
 
 class Graph:
-    def __init__(self, vertices):
+    def __init__(self, vertices, edges = []):
         self.V = len(vertices)
-        self.vertices_weight = vertices
-        self.adjlist = [[] for i in range(self.V)]
+        self.vertex_weights = vertices
+
+        self.adjlist = [[] for _ in range(self.V)]
+        for u, v, w in edges:
+            self.add_edge(u, v, w)
 
     def add_edge(self, u, v, w):
         if (v,w) not in self.adjlist[u]:
@@ -24,34 +27,54 @@ class Graph:
 def pairing(u, v):
     return round(0.5 * (u + v) * (u + v + 1) + v)
 
-def dual(graph):
-    new_adjlist = []
-    labels = []
+def get_position(list, searched_value):
+    pos = 0
+    for elt in list:
+        if elt == searched_value:
+            return (True, pos)
+        pos += 1
+    return (False, pos)
+
+def get_vertex_pos(vertices_pair, weight, ids, weights):
+    vertex_id = pairing(*sorted([vertices_pair[0], vertices_pair[1]]))
+    (is_found, vertex_pos) = get_position(ids, vertex_id)
+    if not is_found:
+        ids.append(vertex_id)
+        weights.append(weight)
+
+    return vertex_pos
+
+def get_edge_weighted_dual_graph(graph):
+    new_edges = []
+    ids = []
     weights = []
 
     adjlist = graph.adjlist.copy()
     for u, neighbors in enumerate(adjlist):
-        for v, weight in neighbors:
+        for v, weight1 in neighbors:
             for w, weight2 in graph.adjlist[v]:
-                if not pairing(u, v) in labels:
-                    labels.append(pairing(u, v))
-                    weights.append(weight)
+                if u == w:
+                    continue
 
-                if not pairing(v, w) in labels:
-                    labels.append(pairing(v, w))
-                    weights.append(weight2)
+                first_vertex_pos = get_vertex_pos((u, v), weight1, ids, weights)
+                second_vertex_pos = get_vertex_pos((v, w), weight2, ids, weights)
 
-                new_adjlist.append((labels.index(pairing(u, v)), labels.index(pairing(v, w)), graph.vertices_weight[v]))
+                new_edges.append((first_vertex_pos, second_vertex_pos, graph.vertex_weights[v]))
 
-    dual_graph = Graph(weights)
-    for u, v, w in new_adjlist:
-        dual_graph.add_edge(u, v, w)
+    dual_graph = Graph(weights, new_edges)
 
     return dual_graph
 
-g = Graph([6, 4, 5])
-g.add_edge(0, 2, 4)
-g.add_edge(1, 0, 8)
+graph = Graph([6, 4, 5])
+graph.add_edge(0, 2, 4)
+graph.add_edge(1, 0, 8)
 
-print(dual(g).adjlist)
-#print(g.adjlist)
+dual_graph = get_edge_weighted_dual_graph(graph)
+
+print("============ DUAL GRAPH VERTIX WEIGHTS ============")
+for vertex, value in enumerate(dual_graph.vertex_weights):
+    print(f"{vertex}: {value}")
+
+print("============ DUAL GRAPH ADJACENT LIST ============")
+for vertex, list in enumerate(dual_graph.adjlist):
+    print(f"{vertex}: {list}")
