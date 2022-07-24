@@ -93,17 +93,17 @@ def build_mesh(faces, points, lines, tetras):
     
     lines_weight = init_lines(vtk_cells, lines)
     faces_weight = init_faces(vtk_cells, faces)
-    tetras_weight = init_tetras(vtk_cells, tetras)
+    # tetras_weight = init_tetras(vtk_cells, tetras)
     
 
-    vtypes = get_vtypes([lines_weight, faces_weight, tetras_weight], [vtk.VTK_LINE, vtk.VTK_TRIANGLE, vtk.VTK_TETRA])
+    vtypes = get_vtypes([lines_weight, faces_weight, """tetras_weight"""], [vtk.VTK_LINE, vtk.VTK_TRIANGLE, """vtk.VTK_TETRA"""])
 
     vtk_ungrid.SetPoints(vtk_pts)
     vtk_ungrid.SetCells(vtypes, vtk_cells)
 
     faces_weight = faces_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
     lines_weight = lines_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
-    tetras_weight = tetras_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
+    # tetras_weight = tetras_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
 
     vtk_pts_weight = build_point_weights(vtk_ungrid, points)
     vtk_ungrid.GetPointData().SetScalars(vtk_pts_weight)
@@ -115,8 +115,8 @@ def build_mesh(faces, points, lines, tetras):
     vtk_faces_weight = build_weights(vtk_ungrid, faces_weight, "FacesWeight")
     vtk_ungrid.GetCellData().AddArray(vtk_faces_weight)
     
-    vtk_tetras_weight = build_weights(vtk_ungrid, tetras_weight, "TetrasWeight")
-    vtk_ungrid.GetCellData().AddArray(vtk_tetras_weight)
+    # vtk_tetras_weight = build_weights(vtk_ungrid, tetras_weight, "TetrasWeight")
+    # vtk_ungrid.GetCellData().AddArray(vtk_tetras_weight)
 
     writer = vtk.vtkXMLUnstructuredGridWriter()
     writer.SetFileName('output.vtu')
@@ -147,16 +147,16 @@ def build_glyph(vectors_pts, vectors_dir):
     writer.Write()
 
 def main():
-    faces = pd.read_csv("cells.csv")
-    points = pd.read_csv("points_new.csv")
-    lines = pd.read_csv("lines.csv")
+    faces = pd.read_csv("graph/cells.csv")
+    points = pd.read_csv("graph/points.csv")
+    lines = pd.read_csv("graph/lines.csv")
     tetras = pd.read_csv("tetra.csv")
 
-    vectors_pts = pd.read_csv("vectors.csv")
-    vectors_dir = pd.read_csv("vectors_dir.csv")
+    # vectors_pts = pd.read_csv("vectors.csv")
+    # vectors_dir = pd.read_csv("vectors_dir.csv")
 
     build_mesh(faces, points, lines, tetras)
-    build_glyph(vectors_pts, vectors_dir)
+    # build_glyph(vectors_pts, vectors_dir)
 
 if __name__ == "__main__":
     main()
