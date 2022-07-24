@@ -1,12 +1,51 @@
 
+from pip import main
+import math
+
 class Coordinates:
-    def __init__(self, coord):
-        self.x, self.y, self.z = coord
+    def __init__(self, x = 0, y = 0, z = 0):
+        self.x = x
+        self.y = y
+        self.z = z
         
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
 
-    def to_string(self):
+    def __add__(self, other):
+        res = Coordinates()
+        if isinstance(other, Coordinates):
+            res.x = self.x + other.x
+            res.y = self.y + other.y
+            res.z = self.z + other.z
+        else:
+            raise ValueError("You try to add Coordinates with something else")
+        
+        return res
+    
+    ## Be carefull, it's not a simple vector substraction !!!
+    def __sub__(self, other):
+        res = Coordinates()
+        if isinstance(other, Coordinates):
+            res.x = self.x + other.x
+            res.y = self.y - other.y
+            res.z = self.z + other.z
+        else:
+            raise ValueError("You try to substract Coordinates with something else")
+        
+        return res
+    
+    def __truediv__(self, other):
+        res = Coordinates()
+        if isinstance(other, int):
+            res.x = self.x / other
+            res.y = self.y / other
+            res.z = self.z / other
+        else:
+            raise ValueError("You try to divide Coordinates with something else than int")
+        
+        return res
+
+    def __str__(self):
         return f'(x: {self.x}, y: {self.y}, z:{self.z})'
 
 class Simplex:
@@ -16,8 +55,8 @@ class Simplex:
         self.weight = weight
         self.ID = ID
         
-    def to_string(self):
-        strs = [elm.to_string() for elm in self.coords]
+    def __str__(self):
+        strs = [str(elm) for elm in self.coords]
         return "[" + ", ".join(strs) + "]"
 
 class Graph:
@@ -28,8 +67,18 @@ class Graph:
         self.adj = []
         self.dual_adj = []
     
-    def add_simplex(self, coord, weight=0):
-        simplex = Simplex(coord, len(self.simplexes_order), weight)
+    def get_simplex(self, coords):
+        simplices = self.simplexes[len(coords) - 1]
+        for simplex in simplices:
+            if simplex.coords == coords:
+                return simplex.ID
+        return None
+
+    def add_simplex(self, coords, weight=0):
+        if (id_found := self.get_simplex(coords)):
+            return id_found
+
+        simplex = Simplex(coords, len(self.simplexes_order), weight)
         self.simplexes_id.append(simplex)
         self.simplexes_order.append(simplex.order)
         self.simplexes[simplex.order].append(simplex)
@@ -77,15 +126,80 @@ class Graph:
 
         return simplex.ID
 
-    def get_neighboors(ID):
+    def get_neighboors(self, ID):
         return self.adj[ID] + self.dual_adj[ID]
 
-    def to_string(self):
-        strs = [elm.to_string() for elm in self.simplexes]
-        return "\n".join(strs)
+    def __str__(self):
+        res = ""
+        for count, simplex_name in enumerate(["Vertices", "Edges", "Faces"]):
+            res += simplex_name + ": [\n"
+            for smp in self.simplexes[count]:
+                res += "\t" + str(smp) + ",\n"
+            res += "]\n\n"
+        return res
 
-    #def get_d_simpexes(self, order):
-    #    return self.simplex[order]
+def create_graph(func, main_vector, nb_lines, nb_columns):
+    ## init graph
+    graph = Graph()
+
+    ## init first vertex (left side)
+    first_vertex = Coordinates()
+    graph.add_simplex([first_vertex], func(first_vertex))
+
+    ## init second vertex (top side)
+    second_vertex = first_vertex + main_vector
+    graph.add_simplex([second_vertex], func(second_vertex))
+
+
+    ## init edge between first and second vertex
+    graph.add_simplex([first_vertex, second_vertex], func((first_vertex + second_vertex) / 2))
+
+    ## build lines of simplices side by side
+    for _ in range(nb_lines):
+        for _ in range(nb_columns):
+            ## if the triangle is pointing upwards
+            if first_vertex.y < second_vertex.y:
+                ## create the third vertex
+                third_vertex = second_vertex - main_vector
+                graph.add_simplex([third_vertex], func(third_vertex))
+
+                ## create edge between second vertex and third vertex
+                graph.add_simplex([second_vertex, third_vertex], func((second_vertex + third_vertex) / 2))
+
+                ## create edge between first vertex and third vertex
+                graph.add_simplex([first_vertex, third_vertex], func((first_vertex + third_vertex) / 2))
+
+            ## if the triangle is pointing downwards
+            else:
+                ## create the third vertex
+                third_vertex = second_vertex + main_vector
+                graph.add_simplex([third_vertex], func(third_vertex))
+
+                ## create edge between second vertex and third vertex
+                graph.add_simplex([second_vertex, third_vertex], func((second_vertex + third_vertex) / 2))
+
+                ## create edge between first vertex and third vertex
+                graph.add_simplex([first_vertex, third_vertex], func((first_vertex + third_vertex) / 2))
+
+
+            ## create the face between the three vertices
+            graph.add_simplex([first_vertex, second_vertex, third_vertex], func((first_vertex + second_vertex + third_vertex) / 3))
+            first_vertex = second_vertex
+            second_vertex = third_vertex
+        
+        ## a bit complicated, we will fix it later
+        break
+    return graph
+
+def wave_function(point: Coordinates):
+    return math.sin(math.sqrt(point.x ** 2 + point.y ** 2))
+
+
+main_vector = Coordinates(x = 1, y = 1, z = 0)
+graph = create_graph(wave_function, main_vector, 1, 4)
+
+print(f"{str(graph)}")
+
 
 """
 g = Graph()
