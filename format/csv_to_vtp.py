@@ -96,7 +96,7 @@ def build_mesh(faces, points, lines, tetras):
     # tetras_weight = init_tetras(vtk_cells, tetras)
     
 
-    vtypes = get_vtypes([lines_weight, faces_weight, """tetras_weight"""], [vtk.VTK_LINE, vtk.VTK_TRIANGLE, """vtk.VTK_TETRA"""])
+    vtypes = get_vtypes([lines_weight, faces_weight], [vtk.VTK_LINE, vtk.VTK_TRIANGLE])
 
     vtk_ungrid.SetPoints(vtk_pts)
     vtk_ungrid.SetCells(vtypes, vtk_cells)
@@ -147,7 +147,7 @@ def build_glyph(vectors_pts, vectors_dir):
     writer.Write()
 
 def main():
-    faces = pd.read_csv("graph/cells.csv")
+    faces = pd.read_csv("graph/faces.csv")
     points = pd.read_csv("graph/points.csv")
     lines = pd.read_csv("graph/lines.csv")
     tetras = pd.read_csv("tetra.csv")

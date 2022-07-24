@@ -60,8 +60,16 @@ class Simplex:
         self.ID = ID
         
     def __str__(self):
-        strs = [str(elm) for elm in self.coords]
-        return "[" + ", ".join(strs) + "]"
+        res = []
+        for count, elm in enumerate(self.coords):
+            vertex = ""
+            if self.order == 0:
+                vertex += str(self.ID) + ": "
+            else:
+                vertex += str(self.vertex_ids[count]) + ": "
+            vertex += str(elm)
+            res.append(vertex)
+        return "[" + ", ".join(res) + "]"
 
 class Graph:
     def __init__(self):

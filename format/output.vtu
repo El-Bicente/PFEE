@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <UnstructuredGrid>
+    <Piece NumberOfPoints="16"                   NumberOfCells="13"                  >
+      <PointData Scalars="PointWeight">
+        <DataArray type="Float64" Name="PointWeight" format="appended" RangeMin="-0.92618483929"       RangeMax="1.0625972889e+223"    offset="0"                   />
+      </PointData>
+      <CellData>
+        <DataArray type="Float64" Name="LineWeight" format="appended" RangeMin="-0.98299204942"       RangeMax="0.99994651679"        offset="164"                 />
+        <DataArray type="Float64" Name="FacesWeight" format="appended" RangeMin="-0.79169733128"       RangeMax="0.86945229177"        offset="312"                 />
+      </CellData>
+      <Points>
+        <DataArray type="Float32" Name="Points" NumberOfComponents="3" format="appended" RangeMin="0"                    RangeMax="6.9784150068e+31"     offset="404"                 />
+      </Points>
+      <Cells>
+        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="512"                 />
+        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="592"                 />
+        <DataArray type="UInt8" Name="types" format="appended" RangeMin=""                     RangeMax=""                     offset="672"                 />
+      </Cells>
+    </Piece>
+  </UnstructuredGrid>
+  <AppendedData encoding="base64">
+   _AQAAAACAAACAAAAAaQAAAA==eJxjYICA7laXkOOz39unalSrJ6pbKbhuufjqm8Rbe4WUksqCVNu8Ar3SzLwSC00WqHrfvx98BfSm7k/JTEvT0ORSgAEmqPw6uTt3d5q/2G8AEvRL9GOFijNDaY85kcl+i9/uBwB92CMpAQAAAACAAABoAAAAXAAAAA==eJw79+pz+uWTT+w/dmRf6///3v4dD2d/yNtX9umd144+uP3Qfu6tI808ui/tD0/ZcGfdhBv7o69uy7UQOGR/N51/3+qS9/t/NvjMD5n1aj8DGPyox0UDAEONMdI=AQAAAACAAABoAAAAMgAAAA==eJxjYACBH/UMFNKbBC/N6b302n7SnowLQbWv7Tc3LYtUKtxvv17KbcnU0Jf7AYbiHnM=AQAAAACAAADAAAAAPwAAAA==eJxjYEAGDfYQzMBwkREicmF15Bcg5QBTYWAc82VlKAPDg9MRJyfVM+AADg4wc4hT3+CASwY7WAA3HwDuyxYTAQAAAACAAADwAAAAKAAAAA==eJxjYIAARjSamQEVMOOg0dXDaG4cfHQaXR4G0M3FZQ+p9gIANbgAiA==AQAAAACAAABoAAAAKgAAAA==eJwtxUEGACAAALAkSZJERPT/Z3ZouyyGLzm7uLq5e3h6efv4+gEdeADBAQAAAACAAAANAAAADgAAAA==eJxjZoYCViAAAAEyADA=
+  </AppendedData>
+</VTKFile>
