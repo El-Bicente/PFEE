@@ -3,7 +3,6 @@ graph LR
 
     S[("Simplicial valué (.csv)")]:::data
     S --> PAR
-    S -- "ajout des faces" --> VTU
     
     PAR[["parser (Python)"]]
     PAR --> R
