@@ -1,8 +1,7 @@
-
 class Coordinates:
     def __init__(self, coord):
         self.x, self.y, self.z = coord
-        
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
 
@@ -15,28 +14,40 @@ class Simplex:
         self.coords = coords
         self.weight = weight
         self.ID = ID
-        
+
     def to_string(self):
         strs = [elm.to_string() for elm in self.coords]
         return "[" + ", ".join(strs) + "]"
 
 class Graph:
     def __init__(self):
+        self.new_graph()
+
+    def new_graph(self):
         self.simplexes_id = []
         self.simplexes_order = []
         self.simplexes = [[], [], []]
         self.adj = []
         self.dual_adj = []
-    
+
+    def load_from_vtk(vtk_ungrid):
+        for i in range(vtk_ungrid.GetNumberOfPoints()):
+            self.add_simplex()
+            print(i, vtk_ungrid.GetPoints().GetPoint(i))
+
+        for i in range (vtk_ungrid.GetNumberOfCells()):
+            print(ids, vtk_ungrid.GetCells().GetCellSize(i))
+        return
+
     def add_simplex(self, coord, weight=0):
         simplex = Simplex(coord, len(self.simplexes_order), weight)
         self.simplexes_id.append(simplex)
         self.simplexes_order.append(simplex.order)
         self.simplexes[simplex.order].append(simplex)
-        
+
         self.adj.append([])
         self.dual_adj.append([])
-        
+
         #ADD 0_faces:
         if (simplex.order == 0):
             for i in [1, 2]:
@@ -68,7 +79,7 @@ class Graph:
                         self.adj[smp.ID].append(simplex.ID)
                     if (smp.ID != simplex.ID) and smp.order == 1 and (smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords):
                         self.adj[simplex.ID].append(smp.ID)
-                        self.adj[smp.ID].append(simplex.ID)                
+                        self.adj[smp.ID].append(simplex.ID)
                     if (smp.ID != simplex.ID) and smp.order == 2 and ((smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords)
                                       or   (smp.coords[1] in simplex.coords and smp.coords[2] in simplex.coords)
                                       or   (smp.coords[0] in simplex.coords and smp.coords[2] in simplex.coords)):
@@ -84,10 +95,10 @@ class Graph:
         strs = [elm.to_string() for elm in self.simplexes]
         return "\n".join(strs)
 
-    #def get_d_simpexes(self, order):
-    #    return self.simplex[order]
+    def get_d_simpexes(self, order):
+        return self.simplexes[order]
 
-"""
+
 g = Graph()
 print(g.add_simplex([Coordinates((0,0,0))]))
 print(g.add_simplex([Coordinates((0,1,0))]))
@@ -101,4 +112,3 @@ print(g.add_simplex([Coordinates((0,0,0)), Coordinates((0,0,1)), Coordinates((0,
 print(g.add_simplex([Coordinates((0,0,0)), Coordinates((0,0,1)), Coordinates((1,1,1))]))
 print(g.adj)
 print(g.dual_adj)
-"""
