@@ -2,6 +2,7 @@ from logging import raiseExceptions
 from graph_structure import Graph, Coordinates
 from operator import itemgetter
 from copy import deepcopy
+import pandas as pd
 
 def get_minimas(F):
     minimas = []
@@ -79,8 +80,36 @@ def reord_algorithm(F):
 
     return F_prime
 
-g = Graph()
+def parse_csv(graph):
+    faces = pd.read_csv("triangles.csv")
+    points = pd.read_csv("points.csv")
+    lines = pd.read_csv("lines.csv")
 
+    for index, row in points.iterrows():
+        coords = [Coordinates([row['X'], row['Y'], row['Z']])]
+        graph.add_simplex(coords, row['Weight'])
+
+    for index, row in lines.iterrows():
+        coords = [graph.simplexes[0][int(row['P1'])].coords[0], graph.simplexes[0][int(row['P2'])].coords[0]]
+        graph.add_simplex(coords, row['Weight'])
+
+    for index, row in faces.iterrows():
+        coords = [graph.simplexes[0][int(row['S1'])].coords[0], graph.simplexes[0][int(row['S2'])].coords[0], graph.simplexes[0][int(row['S3'])].coords[0]]
+        graph.add_simplex(coords, row['Weight'])
+
+    return graph
+
+def graph_to_csv(graph):
+    faces = pd.read_csv("triangles.csv")
+    points = pd.read_csv("points.csv")
+    lines = pd.read_csv("lines.csv")
+
+g = Graph()
+g = parse_csv(g)
+
+
+
+"""
 g.add_simplex([Coordinates((0,0,0))], 2)
 g.add_simplex([Coordinates((1,0,0))], 3)
 g.add_simplex([Coordinates((0,1,0))], 1)
@@ -101,10 +130,30 @@ g.add_simplex([Coordinates((1,1,0)), Coordinates((1,0,0)), Coordinates((0,1,0))]
 print(g.adj)
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
 print(g.dual_adj)
+"""
+#print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
+
+print("Points:")
+print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[0]])}]\n')
+
+print("Lines:")
+print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]\n')
+
+print("Faces:")
+print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]\n')
 
 print("\nRevaluation\n")
 
 g = reord_algorithm(g)
-print(g.adj)
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
-print(g.dual_adj)
+print("Points:")
+print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[0]])}]')
+
+print("Lines:")
+print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]')
+
+print("Faces:")
+print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]')
+#print(g.adj)
+
+#print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
+#print(g.dual_adj)

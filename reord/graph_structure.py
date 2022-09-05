@@ -1,6 +1,6 @@
-
 import numpy as np
 import pandas as pd
+
 
 class Coordinates:
     def __init__(self, coord):
@@ -34,7 +34,6 @@ def create_csv(df, columns, name):
 class Graph:
     def __init__(self):
         self.simplexes_id = []
-        self.simplexes_order = []
         self.simplexes = [[], [], []]
         self.adj = []
         self.dual_adj = []
@@ -64,10 +63,10 @@ class Graph:
 
         return
 
-    def add_simplex(self, coord, weight=0.0):
-        simplex = Simplex(coord, len(self.simplexes_order), weight)
+    
+    def add_simplex(self, coord, weight=0):
+        simplex = Simplex(coord, len(self.simplexes_id), weight)
         self.simplexes_id.append(simplex)
-        self.simplexes_order.append(simplex.order)
         self.simplexes[simplex.order].append(simplex)
 
         self.adj.append([])
