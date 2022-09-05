@@ -12,7 +12,7 @@ def wave_function(x, y):
 
 def build_points(f, step, size):
     spacing = step
-    spacing_height = math.sqrt(step**2-(step/2)**2) 
+    spacing_height = math.sqrt(step**2-(step/2)**2)
     point_ids = np.zeros((size * 2,size * 2)).astype("int")
     id_cpt = 0
     csv = []
@@ -36,8 +36,8 @@ def calculate_mid_line(points_df, id1, id2):
     xm = x1 + (x2 - x1) / 2
     ym = y1 + (y2 - y1) / 2
     return (xm, ym)
-    
-def build_lines(point_ids, points_df, f):
+
+def build_lines(point_ids, points_df, f, size):
     csv = []
     for i in range (point_ids.shape[0]):
         for j in range (point_ids.shape[1]):
@@ -48,8 +48,12 @@ def build_lines(point_ids, points_df, f):
                 mid_coord = calculate_mid_line(points_df, point_ids[i, j], point_ids[i, j + 1])
                 csv.append((point_ids[i, j], point_ids[i, j + 1], f(mid_coord[0], mid_coord[1])))
             if ((j + 1 < point_ids.shape[1]) and (i + 1 < point_ids.shape[0])):
-                mid_coord = calculate_mid_line(points_df, point_ids[i, j], point_ids[i + 1, j + 1])
-                csv.append((point_ids[i, j], point_ids[i + 1, j + 1], f(mid_coord[0], mid_coord[1])))
+                if (size % 2 != i % 2):
+                    mid_coord = calculate_mid_line(points_df, point_ids[i, j], point_ids[i + 1, j + 1])
+                    csv.append((point_ids[i, j], point_ids[i + 1, j + 1], f(mid_coord[0], mid_coord[1])))
+                else:
+                    mid_coord = calculate_mid_line(points_df, point_ids[i, j + 1], point_ids[i + 1, j])
+                    csv.append((point_ids[i, j + 1], point_ids[i + 1, j], f(mid_coord[0], mid_coord[1])))
     df = pd.DataFrame(csv)
     df.columns = ["P1", "P2", "Weight"]
     df.to_csv("lines.csv", index=False)
@@ -57,7 +61,7 @@ def build_lines(point_ids, points_df, f):
 
 def get_id(key, lines_df):
     return int(lines_df[(lines_df.P1 == key[0]) & (lines_df.P2 == key[1])].values[0][0])
-    
+
 def build_triangle(point_ids, lines_df, step, points_df, f, size):
     csv = []
     #H: Hauteur du triangle
@@ -74,8 +78,8 @@ def build_triangle(point_ids, lines_df, step, points_df, f, size):
                 mid_coord = calculate_mid_line(points_df, point_ids[i, j], point_ids[i + 1, j + 1])
                 coef = 1 if (size % 2 != i % 2) else -1
                 cent_coord1 = (mid_coord[0] - cent_xy[0], mid_coord[1] + cent_xy[1] * coef)
-                cent_coord2 = (mid_coord[0] + cent_xy[0], mid_coord[1] + cent_xy[1] * (- coef))      
-                if (size % 2 == i % 2):
+                cent_coord2 = (mid_coord[0] + cent_xy[0], mid_coord[1] + cent_xy[1] * (- coef))
+                if (size % 2 != i % 2):
                     csv.append((point_ids[i, j], point_ids[i + 1, j], point_ids[i + 1, j + 1], f(cent_coord1[0], cent_coord1[1])))
                     csv.append((point_ids[i, j], point_ids[i, j + 1], point_ids[i + 1, j + 1], f(cent_coord2[0], cent_coord2[1])))
                 else:
@@ -94,9 +98,9 @@ def main():
             #Axis x: (-10, 10)
             #Axis y: (-10, 10)
     size = 2
-    
+
     point_ids, points_df = build_points(wave_function, step,size)
-    lines_df = build_lines(point_ids, points_df, wave_function)
+    lines_df = build_lines(point_ids, points_df, wave_function, size)
     triangles_df = build_triangle(point_ids, lines_df, step, points_df, wave_function, size)
 
 if __name__ == "__main__":
