@@ -1,4 +1,3 @@
-
 class Coordinates:
     def __init__(self, coord):
         self.x, self.y, self.z = coord
@@ -23,15 +22,13 @@ class Simplex:
 class Graph:
     def __init__(self):
         self.simplexes_id = []
-        self.simplexes_order = []
         self.simplexes = [[], [], []]
         self.adj = []
         self.dual_adj = []
     
     def add_simplex(self, coord, weight=0):
-        simplex = Simplex(coord, len(self.simplexes_order), weight)
+        simplex = Simplex(coord, len(self.simplexes_id), weight)
         self.simplexes_id.append(simplex)
-        self.simplexes_order.append(simplex.order)
         self.simplexes[simplex.order].append(simplex)
         
         self.adj.append([])
