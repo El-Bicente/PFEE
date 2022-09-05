@@ -97,7 +97,7 @@ def main():
         #Example: size == 10:
             #Axis x: (-10, 10)
             #Axis y: (-10, 10)
-    size = 2
+    size = 9
 
     point_ids, points_df = build_points(wave_function, step,size)
     lines_df = build_lines(point_ids, points_df, wave_function, size)
