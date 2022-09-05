@@ -147,11 +147,17 @@ class Graph:
             with open(file_name + ".csv", "w") as file:
                 csv = head + "\n"
                 if count == 0:
-                    for smp in self.simplexes[count]:
-                        csv += str(smp.ID) + "," + ",".join([str(coord) for coord in smp.coords[0].tuple()]) + "," + str(smp.weight) + "\n"
+                    for smp_pos, smp in enumerate(self.simplexes[count]):
+                        csv += str(smp_pos) + "," + ",".join([str(coord) for coord in smp.coords[0].tuple()]) + "," + str(smp.weight) + "\n"
                 else:
                     for smp in self.simplexes[count]:
-                        csv += ",".join([str(vertex_id) for vertex_id in smp.vertex_ids]) + "," + str(smp.weight) + "\n"
+                        csv_faces = []
+                        for vertex_id in smp.vertex_ids:
+                            for vertex_pos, vertex in enumerate(self.simplexes[0]):
+                                if vertex.ID == vertex_id:
+                                    csv_faces.append(str(vertex_pos))
+                            
+                        csv += ",".join(csv_faces) + "," + str(smp.weight) + "\n"
                 file.write(csv)
 
     def __str__(self):
@@ -198,7 +204,7 @@ def create_graph(func, main_vector, nb_lines, nb_columns):
             else:
                 ## create the third vertex
                 third_vertex = second_vertex + main_vector
-                graph.add_simplex([third_vertex], weight=func(third_vertex))
+                third_vertex_id = graph.add_simplex([third_vertex], weight=func(third_vertex))
 
                 ## create edge between second vertex and third vertex
                 graph.add_simplex([second_vertex, third_vertex], [second_vertex_id, third_vertex_id], weight=func((second_vertex + third_vertex) / 2))
@@ -223,7 +229,7 @@ def wave_function(point: Coordinates):
 
 
 main_vector = Coordinates(x = 1, y = 1, z = 0)
-graph = create_graph(wave_function, main_vector, 1, 4)
+graph = create_graph(wave_function, main_vector, 1, 10)
 graph.save()
 
 print(f"{str(graph)}")
