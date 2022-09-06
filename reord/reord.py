@@ -153,6 +153,8 @@ print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]')
 
 print("Faces:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]')
+
+g.convert_to_csv()
 #print(g.adj)
 
 #print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')

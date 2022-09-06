@@ -119,7 +119,7 @@ class Graph:
         return "\n".join(strs)
 
 
-
+"""
 g = Graph()
 print(g.add_simplex([Coordinates((0,0,0))]))
 print(g.add_simplex([Coordinates((0,1,0))]))
@@ -136,3 +136,4 @@ print(g.adj)
 print(g.dual_adj)
 
 g.convert_to_csv()
+"""
