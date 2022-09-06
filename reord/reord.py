@@ -5,10 +5,10 @@ from copy import deepcopy
 import pandas as pd
 
 def get_minimas(F):
-    minimas = []
+    minimas = set()
     for face in F.simplexes[2]:
         if face.weight == 0:
-            minimas.append(face.ID)
+            minimas.add(face.ID)
     return minimas
 
 def dual(a, b, F):
@@ -45,7 +45,7 @@ def reord_algorithm(F):
         if a not in deja_vu or b not in deja_vu:
             cost = F.simplexes_id[b].weight - F.simplexes_id[a].weight
             queue.append((cost, a, b))
-            deja_vu.append(b)
+            deja_vu.add(b)
 
             # G_past = G_past U {a,b}
             G_past[a].append(b)
@@ -62,7 +62,7 @@ def reord_algorithm(F):
             for c in F.dual_adj[b]:
                 cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
                 if cost >= 0:
-                    queue.append((cost, c, b))
+                    queue.append((cost, b, c))
     
     # Valuation of the remaining simplices to ensure we obtain a stack
 
