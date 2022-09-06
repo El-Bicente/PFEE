@@ -1,8 +1,14 @@
 
+import numpy as np
+import pandas as pd
+
 class Coordinates:
     def __init__(self, coord):
         self.x, self.y, self.z = coord
-        
+
+    def __hash__(self):
+        return hash((self.x, self.y, self.z))
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
 
@@ -15,10 +21,15 @@ class Simplex:
         self.coords = coords
         self.weight = weight
         self.ID = ID
-        
+
     def to_string(self):
         strs = [elm.to_string() for elm in self.coords]
         return "[" + ", ".join(strs) + "]"
+
+def create_csv(df, columns, name):
+    res = pd.DataFrame(df)
+    res.columns = columns
+    res.to_csv(name, index=False)
 
 class Graph:
     def __init__(self):
@@ -27,16 +38,41 @@ class Graph:
         self.simplexes = [[], [], []]
         self.adj = []
         self.dual_adj = []
-    
-    def add_simplex(self, coord, weight=0):
+
+    def convert_to_csv(self):
+        df_points = []#np.zeros((len(self.simplexes[0]), 5))
+        df_lines = []#np.zeros((len(self.simplexes[1]), 3))
+        df_triangle = []#np.zeros((len(self.simplexes[2]), 4))
+        pts_ids = {}
+
+        for i in range (len(self.simplexes[0])):
+            smp = self.simplexes[0][i]
+            df_points.append((i, smp.coords[0].x, smp.coords[0].y, smp.coords[0].z, smp.weight))
+            pts_ids[smp.coords[0]] = i
+
+        for i in range (len(self.simplexes[1])):
+            smp = self.simplexes[1][i]
+            df_lines.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], smp.weight))
+
+        for i in range (len(self.simplexes[2])):
+            smp = self.simplexes[2][i]
+            df_triangle.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], pts_ids[smp.coords[2]], smp.weight))
+
+        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], "graph_points.csv")
+        create_csv(df_lines, ["P1", "P2", "Weight"], "graph_lines.csv")
+        create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], "graph_triangles.csv")
+
+        return
+
+    def add_simplex(self, coord, weight=0.0):
         simplex = Simplex(coord, len(self.simplexes_order), weight)
         self.simplexes_id.append(simplex)
         self.simplexes_order.append(simplex.order)
         self.simplexes[simplex.order].append(simplex)
-        
+
         self.adj.append([])
         self.dual_adj.append([])
-        
+
         #ADD 0_faces:
         if (simplex.order == 0):
             for i in [1, 2]:
@@ -68,7 +104,7 @@ class Graph:
                         self.adj[smp.ID].append(simplex.ID)
                     if (smp.ID != simplex.ID) and smp.order == 1 and (smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords):
                         self.adj[simplex.ID].append(smp.ID)
-                        self.adj[smp.ID].append(simplex.ID)                
+                        self.adj[smp.ID].append(simplex.ID)
                     if (smp.ID != simplex.ID) and smp.order == 2 and ((smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords)
                                       or   (smp.coords[1] in simplex.coords and smp.coords[2] in simplex.coords)
                                       or   (smp.coords[0] in simplex.coords and smp.coords[2] in simplex.coords)):
@@ -84,21 +120,21 @@ class Graph:
         strs = [elm.to_string() for elm in self.simplexes]
         return "\n".join(strs)
 
-    #def get_d_simpexes(self, order):
-    #    return self.simplex[order]
 
-"""
+
 g = Graph()
 print(g.add_simplex([Coordinates((0,0,0))]))
 print(g.add_simplex([Coordinates((0,1,0))]))
 print(g.add_simplex([Coordinates((0,0,1))]))
-
 print(g.add_simplex([Coordinates((1,1,1))]))
 
 print(g.add_simplex([Coordinates((0,0,0)), Coordinates((0,0,1))]))
 print(g.add_simplex([Coordinates((0,1,0)), Coordinates((1,1,1))]))
+
 print(g.add_simplex([Coordinates((0,0,0)), Coordinates((0,0,1)), Coordinates((0,1,0))]))
 print(g.add_simplex([Coordinates((0,0,0)), Coordinates((0,0,1)), Coordinates((1,1,1))]))
+
 print(g.adj)
 print(g.dual_adj)
-"""
+
+g.convert_to_csv()
