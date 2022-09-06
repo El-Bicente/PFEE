@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-
 class Coordinates:
     def __init__(self, coord):
         self.x, self.y, self.z = coord
