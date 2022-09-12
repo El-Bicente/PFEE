@@ -38,9 +38,9 @@ class Graph:
         self.dual_adj = []
 
     def convert_to_csv(self):
-        df_points = [] #np.zeros((len(self.simplexes[0]), 5))
-        df_lines = [] #np.zeros((len(self.simplexes[1]), 3))
-        df_triangle = [] #np.zeros((len(self.simplexes[2]), 4))
+        df_points = []
+        df_lines = []
+        df_triangle = []
         pts_ids = {}
 
         for i in range (len(self.simplexes[0])):
@@ -111,7 +111,7 @@ class Graph:
 
         return simplex.ID
 
-    def get_neighboors(ID):
+    def get_neighboors(self, ID):
         return self.adj[ID] + self.dual_adj[ID]
 
     def to_string(self):

@@ -128,14 +128,14 @@ g.add_simplex([Coordinates((1,1,0)), Coordinates((1,0,0)), Coordinates((0,1,0))]
 print(g.adj)
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
 print(g.dual_adj)
-"""
-#print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
+print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
 
 print("Points:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[0]])}]\n')
 
 print("Lines:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]\n')
+"""
 
 print("Faces:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]\n')
