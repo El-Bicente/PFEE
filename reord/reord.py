@@ -65,7 +65,6 @@ def reord_algorithm(F):
                     queue.append((cost, b, c))
     
     # Valuation of the remaining simplices to ensure we obtain a stack
-
     for i in range(len(F.dual_adj)):
         not_visited = list(set(F.dual_adj[i]).difference(G_past[i]))
         for edge in not_visited:
@@ -106,7 +105,6 @@ def graph_to_csv(graph):
 
 g = Graph()
 g = parse_csv(g)
-
 
 
 """
@@ -155,7 +153,3 @@ print("Faces:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]')
 
 g.convert_to_csv()
-#print(g.adj)
-
-#print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
-#print(g.dual_adj)
