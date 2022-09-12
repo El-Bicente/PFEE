@@ -76,9 +76,9 @@ class Graph:
 
 
     def convert_to_csv(self):
-        df_points = []#np.zeros((len(self.simplexes[0]), 5))
-        df_lines = []#np.zeros((len(self.simplexes[1]), 3))
-        df_triangle = []#np.zeros((len(self.simplexes[2]), 4))
+        df_points = [] #np.zeros((len(self.simplexes[0]), 5))
+        df_lines = [] #np.zeros((len(self.simplexes[1]), 3))
+        df_triangle = [] #np.zeros((len(self.simplexes[2]), 4))
         pts_ids = {}
 
         for i in range (len(self.simplexes[0])):
