@@ -81,9 +81,9 @@ def reord_algorithm(F):
     return F_prime
 
 def parse_csv(graph):
-    faces = pd.read_csv("triangles.csv")
-    points = pd.read_csv("points.csv")
-    lines = pd.read_csv("lines.csv")
+    faces = pd.read_csv("../function_to_csv/triangles.csv")
+    points = pd.read_csv("../function_to_csv/points.csv")
+    lines = pd.read_csv("../function_to_csv/lines.csv")
 
     for index, row in points.iterrows():
         coords = [Coordinates([row['X'], row['Y'], row['Z']])]
@@ -99,37 +99,29 @@ def parse_csv(graph):
 
     return graph
 
-def graph_to_csv(graph):
-    faces = pd.read_csv("triangles.csv")
-    points = pd.read_csv("points.csv")
-    lines = pd.read_csv("lines.csv")
+def find_minimas(graph, id, visited, minimas):
+    if id not in visited:
+        if all(neighbor not in minimas and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[id].weight 
+        for neighbor in graph.dual_adj[id]):
+            minimas.append(id)
+        visited.append(id)
+        
+        for neighbor in graph.dual_adj[id]:
+            find_minimas(graph, neighbor, visited, minimas)
+    return minimas
+
+def set_minimas(graph):
+    first_id = next(i for i, j in enumerate(graph.dual_adj) if j)
+    minimas = find_minimas(graph, first_id, [], [])
+    #print(minimas)
+    for min in minimas:
+        graph.simplexes_id[min].weight = 0
+    return graph
 
 g = Graph()
 g = parse_csv(g)
+g = set_minimas(g)
 
-
-
-"""
-g.add_simplex([Coordinates((0,0,0))], 2)
-g.add_simplex([Coordinates((1,0,0))], 3)
-g.add_simplex([Coordinates((0,1,0))], 1)
-
-g.add_simplex([Coordinates((0,0,0)), Coordinates((1,0,0))], 9)
-g.add_simplex([Coordinates((0,0,0)), Coordinates((0,1,0))], 8)
-g.add_simplex([Coordinates((1,0,0)), Coordinates((0,1,0))], 7)
-
-g.add_simplex([Coordinates((0,0,0)), Coordinates((1,0,0)), Coordinates((0,1,0))], 0)
-
-g.add_simplex([Coordinates((1,1,0))], 4)
-
-g.add_simplex([Coordinates((1,1,0)), Coordinates((0,1,0))], 11)
-g.add_simplex([Coordinates((1,0,0)), Coordinates((1,1,0))], 10)
-
-g.add_simplex([Coordinates((1,1,0)), Coordinates((1,0,0)), Coordinates((0,1,0))], 3)
-
-print(g.adj)
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
-print(g.dual_adj)
 """
 #print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
 
@@ -141,10 +133,13 @@ print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]\n')
 
 print("Faces:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]\n')
-
+"""
 print("\nRevaluation\n")
 
 g = reord_algorithm(g)
+g.convert_to_csv()
+
+"""
 print("Points:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[0]])}]')
 
@@ -154,8 +149,8 @@ print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]')
 print("Faces:")
 print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]')
 
-g.convert_to_csv()
 #print(g.adj)
+"""
 
 #print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
 #print(g.dual_adj)
