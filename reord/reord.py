@@ -1,5 +1,5 @@
 from logging import raiseExceptions
-from graph_structure import Graph, Coordinates
+from reord.graph_structure import Graph, Coordinates
 from operator import itemgetter
 from copy import deepcopy
 import pandas as pd
@@ -80,20 +80,20 @@ def reord_algorithm(F):
 
     return F_prime
 
-def parse_csv(graph):
-    faces = pd.read_csv("../function_to_csv/triangles.csv")
-    points = pd.read_csv("../function_to_csv/points.csv")
-    lines = pd.read_csv("../function_to_csv/lines.csv")
+def parse_csv(graph, paths):
+    faces = pd.read_csv(paths["triangles"])
+    points = pd.read_csv(paths["points"])
+    lines = pd.read_csv(paths["lines"])
 
-    for index, row in points.iterrows():
+    for _, row in points.iterrows():
         coords = [Coordinates([row['X'], row['Y'], row['Z']])]
         graph.add_simplex(coords, row['Weight'])
 
-    for index, row in lines.iterrows():
+    for _, row in lines.iterrows():
         coords = [graph.simplexes[0][int(row['P1'])].coords[0], graph.simplexes[0][int(row['P2'])].coords[0]]
         graph.add_simplex(coords, row['Weight'])
 
-    for index, row in faces.iterrows():
+    for _, row in faces.iterrows():
         coords = [graph.simplexes[0][int(row['S1'])].coords[0], graph.simplexes[0][int(row['S2'])].coords[0], graph.simplexes[0][int(row['S3'])].coords[0]]
         graph.add_simplex(coords, row['Weight'])
 
@@ -113,44 +113,7 @@ def find_minimas(graph, id, visited, minimas):
 def set_minimas(graph):
     first_id = next(i for i, j in enumerate(graph.dual_adj) if j)
     minimas = find_minimas(graph, first_id, [], [])
-    #print(minimas)
+
     for min in minimas:
         graph.simplexes_id[min].weight = 0
     return graph
-
-g = Graph()
-g = parse_csv(g)
-g = set_minimas(g)
-
-"""
-#print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
-
-print("Points:")
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[0]])}]\n')
-
-print("Lines:")
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]\n')
-
-print("Faces:")
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]\n')
-"""
-print("\nRevaluation\n")
-
-g = reord_algorithm(g)
-g.convert_to_csv()
-
-"""
-print("Points:")
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[0]])}]')
-
-print("Lines:")
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[1]])}]')
-
-print("Faces:")
-print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes[2]])}]')
-
-#print(g.adj)
-"""
-
-#print(f'[{",".join([str(simplex.weight) for simplex in g.simplexes_id])}]')
-#print(g.dual_adj)

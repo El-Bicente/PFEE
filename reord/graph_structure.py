@@ -51,10 +51,10 @@ class Simplex:
         strs = [elm.to_string() for elm in self.coords]
         return "[" + ", ".join(strs) + "]"
 
-def create_csv(df, columns, name):
+def create_csv(df, columns, filename):
     res = pd.DataFrame(df)
     res.columns = columns
-    res.to_csv(name, index=False)
+    res.to_csv(filename, index=False)
 
 class Graph:
     def __init__(self):
@@ -75,10 +75,10 @@ class Graph:
         self.dual_union_form = []
 
 
-    def convert_to_csv(self):
-        df_points = [] #np.zeros((len(self.simplexes[0]), 5))
-        df_lines = [] #np.zeros((len(self.simplexes[1]), 3))
-        df_triangle = [] #np.zeros((len(self.simplexes[2]), 4))
+    def convert_to_csv(self, paths):
+        df_points = []
+        df_lines = []
+        df_triangle = []
         pts_ids = {}
 
         for i in range (len(self.simplexes[0])):
@@ -94,9 +94,9 @@ class Graph:
             smp = self.simplexes[2][i]
             df_triangle.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], pts_ids[smp.coords[2]], smp.weight))
 
-        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], "graph_points.csv")
-        create_csv(df_lines, ["P1", "P2", "Weight"], "graph_lines.csv")
-        create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], "graph_triangles.csv")
+        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], paths["points"])
+        create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"])
+        create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], paths["triangles"])
 
         return
 
