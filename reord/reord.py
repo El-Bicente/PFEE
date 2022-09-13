@@ -111,6 +111,8 @@ def find_minimas(graph, id, visited, minimas):
     return minimas
 
 def set_minimas(graph):
+    for simplex in graph.simplexes_id:
+        simplex.weight += 100
     first_id = next(i for i, j in enumerate(graph.dual_adj) if j)
     minimas = find_minimas(graph, first_id, [], [])
 
