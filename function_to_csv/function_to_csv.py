@@ -25,7 +25,7 @@ def build_points(f, step, size):
             id_cpt += 1
     df = pd.DataFrame(csv)
     df.columns = ["Node Number", "X", "Y", "Z", "Weight"]
-    df.to_csv("points.csv", index=False)
+    df.to_csv("function_to_csv/generated_csv/points.csv", index=False)
     return point_ids, df
 
 def calculate_mid_line(points_df, id1, id2):
@@ -56,7 +56,7 @@ def build_lines(point_ids, points_df, f, size):
                     csv.append((point_ids[i, j + 1], point_ids[i + 1, j], f(mid_coord[0], mid_coord[1])))
     df = pd.DataFrame(csv)
     df.columns = ["P1", "P2", "Weight"]
-    df.to_csv("lines.csv", index=False)
+    df.to_csv("function_to_csv/generated_csv/lines.csv", index=False)
     return df
 
 def get_id(key, lines_df):
@@ -87,21 +87,21 @@ def build_triangle(point_ids, lines_df, step, points_df, f, size):
                     csv.append((point_ids[i + 1, j], point_ids[i, j + 1], point_ids[i + 1, j + 1], f(cent_coord2[0], cent_coord2[1])))
     df = pd.DataFrame(csv)
     df.columns = ["S1", "S2", "S3", "Weight"]
-    df.to_csv("triangles.csv", index=False)
+    df.to_csv("function_to_csv/generated_csv/triangles.csv", index=False)
     return df
 
-def main():
-    #Step between 2 points
-    step = 1
-    #Size of the grid (
-        #Example: size == 10:
-            #Axis x: (-10, 10)
-            #Axis y: (-10, 10)
-    size = 9
+def main(step, size, function):
+    """
+    step : Step between 2 points
+    size : Size of the grid
+                Example: size == 10:
+                    Axis x: (-10, 10)
+                    Axis y: (-10, 10)
+    """
 
-    point_ids, points_df = build_points(wave_function, step,size)
-    lines_df = build_lines(point_ids, points_df, wave_function, size)
-    triangles_df = build_triangle(point_ids, lines_df, step, points_df, wave_function, size)
+    point_ids, points_df = build_points(function, step, size)
+    lines_df = build_lines(point_ids, points_df, function, size)
+    build_triangle(point_ids, lines_df, step, points_df, function, size)
 
 if __name__ == "__main__":
-    main()
+    main(step=1, size=9, function=wave_function)
