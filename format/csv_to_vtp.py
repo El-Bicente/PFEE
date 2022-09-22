@@ -79,7 +79,8 @@ def build_vectors(vtk_ungrid_glyph, vectors_dir):
     vectors.SetName("Vector Field")
     vectors.SetNumberOfComponents(3)
     vectors.SetNumberOfTuples(vtk_ungrid_glyph.GetNumberOfPoints())
-    vectors_dir.apply(lambda x: vectors.SetTuple3(x[0],x[1], x[2], x[3]), axis = 1)
+    vectors_dir.apply(lambda x: vectors.SetTuple3(int(x[0]), x[1], x[2], x[3]), axis = 1)
+
     vtk_ungrid_glyph.GetPointData().AddArray(vectors)
     vtk_ungrid_glyph.GetPointData().SetActiveVectors("Vector Field")
 
@@ -149,7 +150,7 @@ def build_glyph(vectors_pts, vectors_dir):
 
     writer = vtk.vtkXMLUnstructuredGridWriter()
     writer.SetInputConnection(add_arrows.GetOutputPort())
-    writer.SetFileName('output2.vtu')
+    writer.SetFileName('format/generated_vtp/output2.vtu')
     writer.SetInputData(vtk_ungrid_glyph)
 
     writer.Write()
