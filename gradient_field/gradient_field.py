@@ -1,7 +1,4 @@
-from generate_csv import build_paper_example
-from graph_structure import Graph
-
-graph = build_paper_example()
+from reord.graph_structure import Graph
 
 def gradient_field_builder(graph: Graph):
     csv_vector_file = ",X,Y,Z\n"
@@ -21,10 +18,8 @@ def gradient_field_builder(graph: Graph):
                 csv_vector_dir_file += f"{vector_id}, {adj_spm_centroid.x - smp_centroid.x}, {adj_spm_centroid.y - smp_centroid.y}, {adj_spm_centroid.z - smp_centroid.z}\n"
                 vector_id += 1
 
-    with open("./generated_csv/vectors.csv", "w") as vectors_file:
+    with open("format/csv_files/vectors_pts.csv", "w") as vectors_file:
         vectors_file.write(csv_vector_file)
 
-    with open("./generated_csv/vectors_dir.csv", "w") as vectors_dir_file:
+    with open("format/csv_files/vectors_dir.csv", "w") as vectors_dir_file:
         vectors_dir_file.write(csv_vector_dir_file)
-
-gradient_field_builder(graph)

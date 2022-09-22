@@ -128,7 +128,7 @@ def build_mesh(faces, points, lines, tetras):
         vtk_ungrid.GetCellData().AddArray(vtk_tetras_weight)
 
     writer = vtk.vtkXMLUnstructuredGridWriter()
-    writer.SetFileName('format/generated_vtp/output.vtu')
+    writer.SetFileName('format/vtp_vtu_files/model.vtu')
     writer.SetInputData(vtk_ungrid)
 
     writer.Write()
@@ -150,7 +150,7 @@ def build_glyph(vectors_pts, vectors_dir):
 
     writer = vtk.vtkXMLUnstructuredGridWriter()
     writer.SetInputConnection(add_arrows.GetOutputPort())
-    writer.SetFileName('format/generated_vtp/output2.vtu')
+    writer.SetFileName('format/vtp_vtu_files/vectors.vtu')
     writer.SetInputData(vtk_ungrid_glyph)
 
     writer.Write()

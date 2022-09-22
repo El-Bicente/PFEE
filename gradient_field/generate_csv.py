@@ -1,4 +1,4 @@
-from graph_structure import Graph, Coordinates
+from reord.graph_structure import Graph, Coordinates
 
 def build_paper_example():
     graph = Graph()
@@ -27,5 +27,3 @@ def build_paper_example():
     graph.add_simplex([Coordinates((4, 0, 0)), Coordinates((6, 3.5, 0)), Coordinates((8, 0, 0))], 1)
 
     return graph
-
-build_paper_example()
