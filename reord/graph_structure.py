@@ -2,6 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 
+
 class Coordinates:
     def __init__(self, coord):
         self.x, self.y, self.z = coord
@@ -60,13 +61,6 @@ class Graph:
         #List where each position represents the ID and each value represents
         #the simplex
         self.simplexes_id = []
-        #List where each position represents the ID and each value represents
-        #the order
-        self.simplexes_order = []
-        #List where sublist of position:
-        #   0: simplexes with order 0
-        #   1: simplexes with order 1
-        #   2: simplexes with order 2
         self.simplexes = [[], [], []]
         #Adjency list of the graph
         self.adj = []
@@ -166,7 +160,6 @@ class Graph:
     def add_simplex(self, coord, weight=0.0):
         simplex = Simplex(coord, len(self.simplexes_order), weight)
         self.simplexes_id.append(simplex)
-        self.simplexes_order.append(simplex.order)
         self.simplexes[simplex.order].append(simplex)
 
         self.adj.append([])
