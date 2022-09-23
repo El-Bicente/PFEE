@@ -69,7 +69,7 @@ def build_triangle(point_ids, lines_df, step, points_df, f, size):
     #Centroid: (H/2) - (C1²/8H)
     C1 = step
     H = math.sqrt(step**2-(step/2)**2)
-    cent_dist = H / 3#(H/2) - ((C1**2)/(8*H))
+    cent_dist = H / 3
     deg = math.radians(60)
     cent_xy = (cent_dist * math.sin(deg), cent_dist * math.cos(deg))
     for i in range (point_ids.shape[0]):
