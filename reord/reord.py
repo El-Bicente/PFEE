@@ -110,8 +110,17 @@ def find_minimas(graph, id, visited, minimas):
             find_minimas(graph, neighbor, visited, minimas)
     return minimas
 
+def set_border_as_minimas(graph):
+    for i in range(len(graph.dual_adj)):
+        if graph.dual_adj[i] and len(graph.dual_adj[i]) <= 2:
+            graph.simplexes_id[i].weight = 0
+
 def set_minimas(graph):
+    for simplex in graph.simplexes_id:
+        simplex.weight += 100
     first_id = next(i for i, j in enumerate(graph.dual_adj) if j)
+    
+    set_border_as_minimas(graph)
     minimas = find_minimas(graph, first_id, [], [])
 
     for min in minimas:
