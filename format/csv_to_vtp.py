@@ -97,7 +97,7 @@ def build_mesh(faces, points, lines, tetras):
 
     weights = [lines_weight, faces_weight]
     types = [vtk.VTK_LINE, vtk.VTK_TRIANGLE]
-    if tetras:
+    if tetras is not None:
         tetras_weight = init_tetras(vtk_cells, tetras)
         weights.append(tetras_weight)
         types.append(vtk.VTK_TETRA)
@@ -110,7 +110,7 @@ def build_mesh(faces, points, lines, tetras):
     faces_weight = faces_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
     lines_weight = lines_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
 
-    if tetras:
+    if tetras is not None:
         tetras_weight = tetras_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
 
     vtk_pts_weight = build_point_weights(vtk_ungrid, points)
@@ -123,7 +123,7 @@ def build_mesh(faces, points, lines, tetras):
     vtk_faces_weight = build_weights(vtk_ungrid, faces_weight, "FacesWeight")
     vtk_ungrid.GetCellData().AddArray(vtk_faces_weight)
 
-    if tetras:
+    if tetras is not None:
         vtk_tetras_weight = build_weights(vtk_ungrid, tetras_weight, "TetrasWeight")
         vtk_ungrid.GetCellData().AddArray(vtk_tetras_weight)
 

@@ -11,6 +11,13 @@ class Coordinates:
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
 
+    def __add__(self, other):
+        x = self.x + other.x
+        y = self.y + other.y
+        z = self.z + other.z
+
+        return Coordinates((x, y, z))
+
     def to_string(self):
         return f'(x: {self.x}, y: {self.y}, z:{self.z})'
 
