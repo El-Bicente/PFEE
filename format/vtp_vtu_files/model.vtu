@@ -6,21 +6,21 @@
         <DataArray type="Float64" Name="PointWeight" format="appended" RangeMin="0"                    RangeMax="0.98776594599"        offset="0"                   />
       </PointData>
       <CellData>
-        <DataArray type="Float64" Name="LineWeight" format="appended" RangeMin="0"                    RangeMax="0"                    offset="80"                  />
-        <DataArray type="Float64" Name="FacesWeight" format="appended" RangeMin="0"                    RangeMax="0"                    offset="128"                 />
-        <DataArray type="Float64" Name="TetrasWeight" format="appended" RangeMin="0"                    RangeMax="0"                    offset="180"                 />
+        <DataArray type="Float64" Name="LineWeight" format="appended" RangeMin="0.4794255386"         RangeMax="0.9974949866"         offset="80"                  />
+        <DataArray type="Float64" Name="FacesWeight" format="appended" RangeMin="0.45413806447"        RangeMax="0.94810408029"        offset="188"                 />
+        <DataArray type="Float64" Name="TetrasWeight" format="appended" RangeMin="0.41960734928"        RangeMax="0.88649957524"        offset="304"                 />
       </CellData>
       <Points>
-        <DataArray type="Float32" Name="Points" NumberOfComponents="3" format="appended" RangeMin="0"                    RangeMax="1.7320508076"         offset="232"                 />
+        <DataArray type="Float32" Name="Points" NumberOfComponents="3" format="appended" RangeMin="0"                    RangeMax="1.7320508076"         offset="388"                 />
       </Points>
       <Cells>
-        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="292"                 />
-        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="464"                 />
-        <DataArray type="UInt8" Name="types" format="appended" RangeMin=""                     RangeMax=""                     offset="616"                 />
+        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="448"                 />
+        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="620"                 />
+        <DataArray type="UInt8" Name="types" format="appended" RangeMin=""                     RangeMax=""                     offset="772"                 />
       </Cells>
     </Piece>
   </UnstructuredGrid>
   <AppendedData encoding="base64">
-   _AQAAAACAAABAAAAAKQAAAA==eJxjYICAdzyc/SFvX9nD6O5Wl5Djs99j8GG0RInA8x1T39sDACQIHJs=AQAAAACAAAA4AQAAEAAAAA==eJxjYBiM4Ef9YKcB0coexA==AQAAAACAAAA4AQAAFQAAAA==eJxjYACBH/UMg4oeaEDYnQD+cSGyAQAAAACAAAA4AQAAFAAAAA==eJxjYACBH/UMozQSTRgAAMxNMc8=AQAAAACAAABgAAAAGgAAAA==eJxjYEAGDfYMWPkgGpscsjyyGAIDAC3jCPU=AQAAAACAAABAAwAAbQAAAA==eJx10jsOwDAIA9A0P+5/4w4VQ59kFhRjkDEZ44tn/GPy3vAm7w0uv6gXvIJ/qB+y8y78S3b+on+R5ae9kn73tL/xDud12Cdf/QlXj/zG9V1cneLN9x7i7iWe/El3SP4mveku6b/oZ9dfOH4BbQ==AQAAAACAAAA4AQAAXgAAAA==eJwtxcEGgwAAANAkM5PJzGQyMzFGRIyIESMiYocdOuywQ///BR167/LCYBV54613jr134oOPPjn12Zkvvvrm3Hc/XLh05adrN3659dudew8e/fHXk3/+e/YC1AYHDw==AQAAAACAAAAnAAAAEAAAAA==eJxjZkYHrGiACwQAC2QAuQ==
+   _AQAAAACAAABAAAAAKQAAAA==eJxjYICAdzyc/SFvX9nD6O5Wl5Djs99j8GG0RInA8x1T39sDACQIHJs=AQAAAACAAAA4AQAAPwAAAA==eJz7wOpd8mLdPfsPaPS5V5/TL598gkFL+i7Ji5d6h0FPV44un37sDZzuztWZXfX6PcniDGDwo36w0wA9sWw0AQAAAACAAAA4AQAARAAAAA==eJxjYACBH/UMg4RmvyofZlv+0P4dD2d/yNtXGHTLhfWSMwXuYtASK/Wv8j99aX9XzDHuXtg7DBqXPLo4se4EACQZX8M=AQAAAACAAAA4AQAALAAAAA==eJxjYACBH/UMozSY5t029cSNW7fsK7Z8Kg9LeGFvc7Yw2iTuDQYNAIPBReI=AQAAAACAAABgAAAAGgAAAA==eJxjYEAGDfYMWPkgGpscsjyyGAIDAC3jCPU=AQAAAACAAABAAwAAbQAAAA==eJx10jsOwDAIA9A0P+5/4w4VQ59kFhRjkDEZ44tn/GPy3vAm7w0uv6gXvIJ/qB+y8y78S3b+on+R5ae9kn73tL/xDud12Cdf/QlXj/zG9V1cneLN9x7i7iWe/El3SP4mveku6b/oZ9dfOH4BbQ==AQAAAACAAAA4AQAAXgAAAA==eJwtxcEGgwAAANAkM5PJzGQyMzFGRIyIESMiYocdOuywQ///BR167/LCYBV54613jr134oOPPjn12Zkvvvrm3Hc/XLh05adrN3659dudew8e/fHXk3/+e/YC1AYHDw==AQAAAACAAAAnAAAAEAAAAA==eJxjZkYHrGiACwQAC2QAuQ==
   </AppendedData>
 </VTKFile>

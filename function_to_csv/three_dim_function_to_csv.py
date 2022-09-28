@@ -71,70 +71,85 @@ def create_cube_vertices(volume_data: VolumeData, starting_pos: Coordinates):
 
     return cube_vertivces_ids
 
+def create_weighted_simplex(volume_data: VolumeData, ids: list):
+    mean_degree = len(ids)
+    centroid = Coordinates((0, 0, 0))
+    for current_id in ids:
+        coords_vertex_row = volume_data.vertices.loc[current_id]
+        centroid.x += coords_vertex_row.x
+        centroid.y += coords_vertex_row.y
+        centroid.z += coords_vertex_row.z
+
+    centroid.x /= mean_degree
+    centroid.y /= mean_degree
+    centroid.z /= mean_degree
+    
+    return ', '.join([str(id) for id in ids]) + ', ' + str(volume_data.function(centroid)) + '\n' 
+
 # FIXME Think to init the correct weights
 def create_cube_edges(volume_data: VolumeData, cube_vertices_ids: dict):
-    edges = f"{cube_vertices_ids['A']}, {cube_vertices_ids['B']}, 0\n"
-    edges += f"{cube_vertices_ids['A']}, {cube_vertices_ids['C']}, 0\n"
-    edges += f"{cube_vertices_ids['A']}, {cube_vertices_ids['E']}, 0\n"
-    edges += f"{cube_vertices_ids['B']}, {cube_vertices_ids['C']}, 0\n"
-    edges += f"{cube_vertices_ids['B']}, {cube_vertices_ids['E']}, 0\n"
-    edges += f"{cube_vertices_ids['C']}, {cube_vertices_ids['E']}, 0\n"
+    edges = create_weighted_simplex(volume_data, [cube_vertices_ids['A'], cube_vertices_ids['B']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['A'], cube_vertices_ids['C']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['A'], cube_vertices_ids['E']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['C']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['E']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['C'], cube_vertices_ids['E']])
 
-    edges += f"{cube_vertices_ids['B']}, {cube_vertices_ids['H']}, 0\n"
-    edges += f"{cube_vertices_ids['C']}, {cube_vertices_ids['H']}, 0\n"
-    edges += f"{cube_vertices_ids['E']}, {cube_vertices_ids['H']}, 0\n"
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['H']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['C'], cube_vertices_ids['H']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['E'], cube_vertices_ids['H']])
 
-    edges += f"{cube_vertices_ids['B']}, {cube_vertices_ids['F']}, 0\n"
-    edges += f"{cube_vertices_ids['E']}, {cube_vertices_ids['F']}, 0\n"
-    edges += f"{cube_vertices_ids['F']}, {cube_vertices_ids['H']}, 0\n"
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['F']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['E'], cube_vertices_ids['F']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['F'], cube_vertices_ids['H']])
 
-    edges += f"{cube_vertices_ids['C']}, {cube_vertices_ids['G']}, 0\n"
-    edges += f"{cube_vertices_ids['E']}, {cube_vertices_ids['G']}, 0\n"
-    edges += f"{cube_vertices_ids['G']}, {cube_vertices_ids['H']}, 0\n"
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['C'], cube_vertices_ids['G']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['E'], cube_vertices_ids['G']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['G'], cube_vertices_ids['H']])
 
-    edges += f"{cube_vertices_ids['B']}, {cube_vertices_ids['D']}, 0\n"
-    edges += f"{cube_vertices_ids['C']}, {cube_vertices_ids['D']}, 0\n"
-    edges += f"{cube_vertices_ids['D']}, {cube_vertices_ids['H']}, 0\n"
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['D']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['C'], cube_vertices_ids['D']])
+    edges += create_weighted_simplex(volume_data, [cube_vertices_ids['D'], cube_vertices_ids['H']])
 
     volume_data.csv.edges += edges
 
 # FIXME Think to init the correct weight
 def create_cube_faces(volume_data: VolumeData, cube_vertices_ids: dict):
     # MIDDLE TETRAHEDRON
-    faces = f"{cube_vertices_ids['B']}, {cube_vertices_ids['C']}, {cube_vertices_ids['E']}, 0\n"
-    faces += f"{cube_vertices_ids['B']}, {cube_vertices_ids['E']}, {cube_vertices_ids['H']}, 0\n"
-    faces += f"{cube_vertices_ids['B']}, {cube_vertices_ids['C']}, {cube_vertices_ids['H']}, 0\n"
-    faces += f"{cube_vertices_ids['C']}, {cube_vertices_ids['E']}, {cube_vertices_ids['H']}, 0\n"
+    faces = create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['C'], cube_vertices_ids['E']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['E'], cube_vertices_ids['H']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['B'], cube_vertices_ids['C'], cube_vertices_ids['H']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['C'], cube_vertices_ids['E'], cube_vertices_ids['H']])
 
     # TETRAHEDRON IN A
-    faces += f"{cube_vertices_ids['A']}, {cube_vertices_ids['B']}, {cube_vertices_ids['E']}, 0\n"
-    faces += f"{cube_vertices_ids['A']}, {cube_vertices_ids['C']}, {cube_vertices_ids['E']}, 0\n"
-    faces += f"{cube_vertices_ids['A']}, {cube_vertices_ids['B']}, {cube_vertices_ids['C']}, 0\n"
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['A'], cube_vertices_ids['B'], cube_vertices_ids['E']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['A'], cube_vertices_ids['C'], cube_vertices_ids['E']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['A'], cube_vertices_ids['B'], cube_vertices_ids['C']])
 
     # TETRAHEDRON IN D
-    faces += f"{cube_vertices_ids['D']}, {cube_vertices_ids['B']}, {cube_vertices_ids['C']}, 0\n"
-    faces += f"{cube_vertices_ids['D']}, {cube_vertices_ids['C']}, {cube_vertices_ids['H']}, 0\n"
-    faces += f"{cube_vertices_ids['D']}, {cube_vertices_ids['B']}, {cube_vertices_ids['H']}, 0\n"
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['D'], cube_vertices_ids['B'], cube_vertices_ids['C']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['D'], cube_vertices_ids['C'], cube_vertices_ids['H']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['D'], cube_vertices_ids['B'], cube_vertices_ids['H']])
 
     # TETRAHEDRON IN F
-    faces += f"{cube_vertices_ids['F']}, {cube_vertices_ids['E']}, {cube_vertices_ids['H']}, 0\n"
-    faces += f"{cube_vertices_ids['F']}, {cube_vertices_ids['B']}, {cube_vertices_ids['E']}, 0\n"
-    faces += f"{cube_vertices_ids['F']}, {cube_vertices_ids['B']}, {cube_vertices_ids['H']}, 0\n"
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['F'], cube_vertices_ids['E'], cube_vertices_ids['H']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['F'], cube_vertices_ids['B'], cube_vertices_ids['E']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['F'], cube_vertices_ids['B'], cube_vertices_ids['H']])
 
     # TETRAHEDRON IN G
-    faces += f"{cube_vertices_ids['G']}, {cube_vertices_ids['E']}, {cube_vertices_ids['H']}, 0\n"
-    faces += f"{cube_vertices_ids['G']}, {cube_vertices_ids['C']}, {cube_vertices_ids['E']}, 0\n"
-    faces += f"{cube_vertices_ids['G']}, {cube_vertices_ids['C']}, {cube_vertices_ids['H']}, 0\n"
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['G'], cube_vertices_ids['E'], cube_vertices_ids['H']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['G'], cube_vertices_ids['C'], cube_vertices_ids['E']])
+    faces += create_weighted_simplex(volume_data, [cube_vertices_ids['G'], cube_vertices_ids['C'], cube_vertices_ids['H']])
 
     volume_data.csv.faces += faces
 
 # FIXME Think to init the correct weight
 def create_cube_tetrahedrons(volume_data: VolumeData, cube_vertivces_ids: dict):
-    tetras = f"{cube_vertivces_ids['A']}, {cube_vertivces_ids['B']}, {cube_vertivces_ids['C']}, {cube_vertivces_ids['E']}, 0\n"
-    tetras += f"{cube_vertivces_ids['B']}, {cube_vertivces_ids['C']}, {cube_vertivces_ids['E']}, {cube_vertivces_ids['H']}, 0\n"
-    tetras += f"{cube_vertivces_ids['B']}, {cube_vertivces_ids['E']}, {cube_vertivces_ids['F']}, {cube_vertivces_ids['H']}, 0\n"
-    tetras += f"{cube_vertivces_ids['C']}, {cube_vertivces_ids['E']}, {cube_vertivces_ids['G']}, {cube_vertivces_ids['H']}, 0\n"
-    tetras += f"{cube_vertivces_ids['B']}, {cube_vertivces_ids['C']}, {cube_vertivces_ids['D']}, {cube_vertivces_ids['H']}, 0\n"
+    tetras = create_weighted_simplex(volume_data, [cube_vertivces_ids['A'], cube_vertivces_ids['B'], cube_vertivces_ids['C'], cube_vertivces_ids['E']])
+    tetras += create_weighted_simplex(volume_data, [cube_vertivces_ids['B'], cube_vertivces_ids['C'], cube_vertivces_ids['E'], cube_vertivces_ids['H']])
+    tetras += create_weighted_simplex(volume_data, [cube_vertivces_ids['B'], cube_vertivces_ids['E'], cube_vertivces_ids['F'], cube_vertivces_ids['H']])
+    tetras += create_weighted_simplex(volume_data, [cube_vertivces_ids['C'], cube_vertivces_ids['E'], cube_vertivces_ids['G'], cube_vertivces_ids['H']])
+    tetras += create_weighted_simplex(volume_data, [cube_vertivces_ids['B'], cube_vertivces_ids['C'], cube_vertivces_ids['D'], cube_vertivces_ids['H']])
 
     volume_data.csv.tetras += tetras
 
