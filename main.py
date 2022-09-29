@@ -21,6 +21,6 @@ graph = parse_csv(graph, csv_paths)
 graph = set_minimas(graph)
 graph = reord_algorithm(graph)
 graph.convert_to_csv(csv_paths)
-#graph.convert_dual_to_csv(csv_paths)
+graph.convert_dual_to_csv(csv_dual_paths)
 ### Generate vtu file
 csv_to_vtp.main(csv_paths)

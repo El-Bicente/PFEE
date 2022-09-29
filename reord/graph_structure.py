@@ -120,34 +120,23 @@ class Graph:
         return
 
 
-    def insert_sort_dual(self, simplex_coords, weight):
-        list_to_add = self.dual_vertices
+    def insert_dual(self, simplex_coords, weight):
+        new_smp_id = len(self.dual_vertices) + len(self.dual_edges)
+        new_simplex = Simplex(simplex_coords, new_smp_id, weight)
 
         #Verify if 0-face already exists
         #Can't happen with 1-face and there is no 2-faces in dual graph
         if (len(simplex_coords) == 1):
-            for i in range (len(list_to_add)):
-                simplex = list_to_add[i]
+            for i in range (len(self.dual_vertices)):
+                simplex = self.dual_vertices[i]
                 if simplex.coords == simplex_coords:
                     return i, simplex.ID
+            self.dual_vertices.append(new_simplex)
+            return len(self.dual_vertices) - 1, new_smp_id
 
-        if (len(simplex_coords) == 2):
-            list_to_add = self.dual_edges
-
-        new_smp_id = len(self.dual_vertices) + len(self.dual_edges)
-        new_simplex = Simplex(simplex_coords, new_smp_id, weight)
-
-        i = 0
-        while (i < len(list_to_add)):
-            if (list_to_add[i].weight > weight):
-                break
-            i += 1
-        list_to_add.insert(i, new_simplex)
-
-        return i, new_smp_id
-
-
-
+        self.dual_edges.append(new_simplex)
+        return len(self.dual_edges) - 1, new_smp_id
+        
 
     #Return a 1-face simplex that is shared by two 2-faces ones
     def find_concurent_2_faces(self, smp1, smp2):
@@ -191,11 +180,11 @@ class Graph:
                     if  (smp.order == 2 and ((smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords)
                         or  (smp.coords[1] in simplex.coords and smp.coords[2] in simplex.coords)
                         or  (smp.coords[0] in simplex.coords and smp.coords[2] in simplex.coords))):
-                        vert1_ID, vert1_ID_global = self.insert_sort_dual([simplex.get_centroid()], simplex.weight)
-                        vert2_ID , vert2_ID_global = self.insert_sort_dual([smp.get_centroid()], smp.weight)
+                        vert1_ID, vert1_ID_global = self.insert_dual([simplex.get_centroid()], simplex.weight)
+                        vert2_ID , vert2_ID_global = self.insert_dual([smp.get_centroid()], smp.weight)
 
                         new_dual_edge = self.find_concurent_2_faces(simplex, smp)
-                        edge_ID, edge_ID_global = self.insert_sort_dual([self.dual_vertices[vert1_ID].coords[0], self.dual_vertices[vert2_ID].coords[0]], new_dual_edge.weight)
+                        edge_ID, edge_ID_global = self.insert_dual([self.dual_vertices[vert1_ID].coords[0], self.dual_vertices[vert2_ID].coords[0]], new_dual_edge.weight)
 
 
                         self.dual_adj[vert1_ID_global].append(edge_ID_global)

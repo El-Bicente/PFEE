@@ -92,11 +92,15 @@ def build_mesh(faces, points, lines, tetras):
     init_points(vtk_pts, points)
 
     lines_weight = init_lines(vtk_cells, lines)
-    faces_weight = init_faces(vtk_cells, faces)
+    weights = [lines_weight]
+    types = [vtk.VTK_LINE]
 
-    weights = [lines_weight, faces_weight]
-    types = [vtk.VTK_LINE, vtk.VTK_TRIANGLE]
-    if tetras:
+    if not faces.empty:
+        faces_weight = init_faces(vtk_cells, faces)
+        weights.append(faces_weight)
+        types.append(vtk.VTK_TRIANGLE)
+
+    if not tetras.empty:
         tetras_weight = init_tetras(vtk_cells, tetras)
         weights.append(tetras_weight)
         types.append(vtk.VTK_TETRA)
@@ -106,10 +110,11 @@ def build_mesh(faces, points, lines, tetras):
     vtk_ungrid.SetPoints(vtk_pts)
     vtk_ungrid.SetCells(vtypes, vtk_cells)
 
-    faces_weight = faces_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
     lines_weight = lines_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
 
-    if tetras:
+    if not faces.empty:
+        faces_weight = faces_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
+    if not tetras.empty:
         tetras_weight = tetras_weight.set_index("ID").reindex(range(vtk_ungrid.GetNumberOfCells()), fill_value=float("nan")).reset_index()
 
     vtk_pts_weight = build_point_weights(vtk_ungrid, points)
@@ -119,10 +124,11 @@ def build_mesh(faces, points, lines, tetras):
     vtk_lines_weight = build_weights(vtk_ungrid, lines_weight, "LineWeight")
     vtk_ungrid.GetCellData().AddArray(vtk_lines_weight)
 
-    vtk_faces_weight = build_weights(vtk_ungrid, faces_weight, "FacesWeight")
-    vtk_ungrid.GetCellData().AddArray(vtk_faces_weight)
+    if not faces.empty:
+        vtk_faces_weight = build_weights(vtk_ungrid, faces_weight, "FacesWeight")
+        vtk_ungrid.GetCellData().AddArray(vtk_faces_weight)
 
-    if tetras:
+    if not tetras.empty:
         vtk_tetras_weight = build_weights(vtk_ungrid, tetras_weight, "TetrasWeight")
         vtk_ungrid.GetCellData().AddArray(vtk_tetras_weight)
 
@@ -154,12 +160,15 @@ def build_glyph(vectors_pts, vectors_dir):
 
     writer.Write()
 
-def main(paths, generateVectors = False, generateTetras = False):
-    faces = pd.read_csv(paths["triangles"])
+def main(paths, generateVectors = False, generateFaces = False, generateTetras = False):
     points = pd.read_csv(paths["points"])
     lines = pd.read_csv(paths["lines"])
 
-    tetras = None
+    faces = pd.DataFrame([])
+    if generateFaces:
+        faces = pd.read_csv(paths["triangles"])
+
+    tetras = pd.DataFrame([])
     if generateTetras:
         tetras = pd.read_csv(paths["tetras"])
 
