@@ -20,7 +20,7 @@ for elm in g.dual_edges:
     print(elm.ID, elm.weight)
 
 
-g.convert_to_csv()
+g.convert_to_csv({"points": "points.csv", "lines": "lines.csv", "triangles": "triangles.csv"})
 g.convert_dual_to_csv()
 #print(g.simplexes_order)
 #print(g.simplexes)

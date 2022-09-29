@@ -11,12 +11,16 @@ csv_paths = {
     "triangles" : "function_to_csv/generated_csv/triangles.csv"
 }
 
+csv_dual_paths = {
+    "points" : "function_to_csv/generated_csv/points_dual.csv",
+    "lines" : "function_to_csv/generated_csv/lines_dual.csv",
+}
 ### Revaluation
 graph = Graph()
 graph = parse_csv(graph, csv_paths)
 graph = set_minimas(graph)
 graph = reord_algorithm(graph)
 graph.convert_to_csv(csv_paths)
-
+#graph.convert_dual_to_csv(csv_paths)
 ### Generate vtu file
 csv_to_vtp.main(csv_paths)

@@ -100,7 +100,7 @@ class Graph:
 
         return
 
-    def convert_dual_to_csv(self):
+    def convert_dual_to_csv(self, paths):
         df_points = []#np.zeros((len(self.simplexes[0]), 5))
         df_lines = []#np.zeros((len(self.simplexes[1]), 3))
         pts_ids = {}
@@ -114,20 +114,22 @@ class Graph:
             smp = self.dual_edges[i]
             df_lines.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], smp.weight))
 
-        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], "graph_dual_points.csv")
-        create_csv(df_lines, ["P1", "P2", "Weight"], "graph_dual_lines.csv")
+        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], paths["points"])
+        create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"])
 
         return
+
 
     def insert_sort_dual(self, simplex_coords, weight):
         list_to_add = self.dual_vertices
 
-        #Verify in 0-face already exists
+        #Verify if 0-face already exists
         #Can't happen with 1-face and there is no 2-faces in dual graph
         if (len(simplex_coords) == 1):
-            for simplex in list_to_add:
+            for i in range (len(list_to_add)):
+                simplex = list_to_add[i]
                 if simplex.coords == simplex_coords:
-                    return list_to_add.ID
+                    return i, simplex.ID
 
         if (len(simplex_coords) == 2):
             list_to_add = self.dual_edges
@@ -142,7 +144,8 @@ class Graph:
             i += 1
         list_to_add.insert(i, new_simplex)
 
-        return new_smp_id
+        return i, new_smp_id
+
 
 
 
@@ -158,7 +161,7 @@ class Graph:
         return res[0]
 
     def add_simplex(self, coord, weight=0.0):
-        simplex = Simplex(coord, len(self.simplexes_order), weight)
+        simplex = Simplex(coord, len(self.simplexes_id), weight)
         self.simplexes_id.append(simplex)
         self.simplexes[simplex.order].append(simplex)
 
@@ -188,17 +191,17 @@ class Graph:
                     if  (smp.order == 2 and ((smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords)
                         or  (smp.coords[1] in simplex.coords and smp.coords[2] in simplex.coords)
                         or  (smp.coords[0] in simplex.coords and smp.coords[2] in simplex.coords))):
-                        vert1_ID = self.insert_sort_dual([simplex.get_centroid()], simplex.weight)
-                        vert2_ID = self.insert_sort_dual([smp.get_centroid()], smp.weight)
+                        vert1_ID, vert1_ID_global = self.insert_sort_dual([simplex.get_centroid()], simplex.weight)
+                        vert2_ID , vert2_ID_global = self.insert_sort_dual([smp.get_centroid()], smp.weight)
 
                         new_dual_edge = self.find_concurent_2_faces(simplex, smp)
-                        edge_ID = self.insert_sort_dual([self.dual_vertices[vert1_ID].coords[0], self.dual_vertices[vert2_ID].coords[0]], new_dual_edge.weight)
+                        edge_ID, edge_ID_global = self.insert_sort_dual([self.dual_vertices[vert1_ID].coords[0], self.dual_vertices[vert2_ID].coords[0]], new_dual_edge.weight)
 
 
-                        self.dual_adj[vert1_ID].append(edge_ID)
-                        self.dual_adj[vert2_ID].append(edge_ID)
-                        self.dual_adj[edge_ID].append(vert2_ID)
-                        self.dual_adj[edge_ID].append(vert1_ID)
+                        self.dual_adj[vert1_ID_global].append(edge_ID_global)
+                        self.dual_adj[vert2_ID_global].append(edge_ID_global)
+                        self.dual_adj[edge_ID_global].append(vert2_ID_global)
+                        self.dual_adj[edge_ID_global].append(vert1_ID_global)
 
                         self.dual_union_form.append([vert1_ID, vert2_ID, new_dual_edge.weight])
 
