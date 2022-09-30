@@ -95,8 +95,10 @@ class Graph:
             df_triangle.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], pts_ids[smp.coords[2]], smp.weight))
 
         create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], paths["points"])
-        create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"])
-        create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], paths["triangles"])
+        if ("lines" in paths):
+            create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"])
+        if ("triangles" in paths):
+            create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], paths["triangles"])
 
         return
 
@@ -136,7 +138,7 @@ class Graph:
 
         self.dual_edges.append(new_simplex)
         return len(self.dual_edges) - 1, new_smp_id
-        
+
 
     #Return a 1-face simplex that is shared by two 2-faces ones
     def find_concurent_2_faces(self, smp1, smp2):

@@ -83,7 +83,7 @@ def build_vectors(vtk_ungrid_glyph, vectors_dir):
     vtk_ungrid_glyph.GetPointData().AddArray(vectors)
     vtk_ungrid_glyph.GetPointData().SetActiveVectors("Vector Field")
 
-def build_mesh(faces, points, lines, tetras):
+def build_mesh(faces, points, lines, tetras, output_file='format/generated_vtp/output.vtu'):
     vtk_ungrid = vtk.vtkUnstructuredGrid()
 
     vtk_pts = vtk.vtkPoints()
@@ -104,7 +104,7 @@ def build_mesh(faces, points, lines, tetras):
         tetras_weight = init_tetras(vtk_cells, tetras)
         weights.append(tetras_weight)
         types.append(vtk.VTK_TETRA)
-    
+
     vtypes = get_vtypes(weights=weights, types=types)
 
     vtk_ungrid.SetPoints(vtk_pts)
@@ -133,7 +133,7 @@ def build_mesh(faces, points, lines, tetras):
         vtk_ungrid.GetCellData().AddArray(vtk_tetras_weight)
 
     writer = vtk.vtkXMLUnstructuredGridWriter()
-    writer.SetFileName('format/generated_vtp/output.vtu')
+    writer.SetFileName(output_file)
     writer.SetInputData(vtk_ungrid)
 
     writer.Write()
@@ -160,21 +160,21 @@ def build_glyph(vectors_pts, vectors_dir):
 
     writer.Write()
 
-def main(paths, generateVectors = False, generateFaces = False, generateTetras = False):
+def main(paths):
     points = pd.read_csv(paths["points"])
     lines = pd.read_csv(paths["lines"])
 
     faces = pd.DataFrame([])
-    if generateFaces:
+    if "triangles" in paths:
         faces = pd.read_csv(paths["triangles"])
 
     tetras = pd.DataFrame([])
-    if generateTetras:
+    if "tetras" in paths:
         tetras = pd.read_csv(paths["tetras"])
 
-    build_mesh(faces, points, lines, tetras)
+    build_mesh(faces, points, lines, tetras, paths["output"])
 
-    if generateVectors:
+    if "vectors" in paths and "vectors_dir" in paths:
         vectors_pts = pd.read_csv(paths["vectors"])
         vectors_dir = pd.read_csv(paths["vectors_dir"])
 

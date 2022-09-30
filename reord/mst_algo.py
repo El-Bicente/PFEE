@@ -1,5 +1,7 @@
-from graph_structure import Graph, Coordinates
+from reord.graph_structure import Graph, Coordinates
+from format import csv_to_vtp
 
+"""
 g = Graph()
 print(g.add_simplex([Coordinates((0,0,0))]))
 print(g.add_simplex([Coordinates((0,1,0))]))
@@ -11,8 +13,16 @@ print(g.add_simplex([Coordinates((0,1,0)), Coordinates((1,1,1))]))
 
 print(g.add_simplex([Coordinates((0,0,0)), Coordinates((0,0,1)), Coordinates((0,1,0))]))
 print(g.add_simplex([Coordinates((0,0,0)), Coordinates((0,0,1)), Coordinates((1,1,1))]))
+"""
 
 #https://www.geeksforgeeks.org/kruskals-minimum-spanning-tree-algorithm-greedy-algo-2/
+
+csv_paths = {
+    "points" : "function_to_csv/generated_csv/points_mst.csv",
+    "lines" : "function_to_csv/generated_csv/lines_mst.csv",
+    "output": "format/generated_vtp/output_graph_mst.vtu"
+}
+
 def find(parent, i):
     if parent[i] == i:
         return i
@@ -36,6 +46,8 @@ def union(parent, rank, x, y):
         rank[xroot] += 1
 
 def kruskal_mst(G):
+        result_g = Graph()
+
         result = []  # This will store the resultant MST
 
         # An index variable, used for sorted edges
@@ -49,8 +61,8 @@ def kruskal_mst(G):
         graph = sorted(G.dual_union_form,
                             key=lambda item: item[2])
 
-        for node in G.dual_vertices:
-            parent.append(node.ID)
+        for node_id in range (len(G.dual_vertices)):
+            parent.append(node_id)
             rank.append(0)
 
         # Number of edges to be taken is equal to V-1
@@ -76,7 +88,14 @@ def kruskal_mst(G):
         print("Edges in the constructed MST")
         for u, v, weight in result:
             minimumCost += weight
-            print("%d -- %d == %d" % (u, v, weight))
+            p1 = G.dual_vertices[u]
+            p2 = G.dual_vertices[v]
+            result_g.add_simplex(p1.coords, p1.weight)
+            result_g.add_simplex(p2.coords, p2.weight)
+            result_g.add_simplex([p1.coords[0], p2.coords[0]], weight)
+            #print("%d -- %d == %f" % (u, v, weight))
+        result_g.convert_to_csv(csv_paths)
+        csv_to_vtp.main(csv_paths)
         print("Minimum Spanning Tree", minimumCost)
 
-kruskal_mst(g)
+#kruskal_mst(g)
