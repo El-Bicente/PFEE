@@ -17,6 +17,12 @@ class Coordinates:
         z = self.z + other.z
 
         return Coordinates((x, y, z))
+    
+    def __mul__(self, other):
+        return Coordinates((other * self.x, other * self.y, other * self.z))
+
+    def __rmul__(self, other):
+        return Coordinates((other * self.x, other * self.y, other * self.z))
 
     def to_string(self):
         return f'(x: {self.x}, y: {self.y}, z:{self.z})'

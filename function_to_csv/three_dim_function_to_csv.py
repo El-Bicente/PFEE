@@ -21,15 +21,21 @@ class VolumeData:
         self.csv: DataCSV = DataCSV()
         self.function = function
         self.cube_size = 1 if cube_size < 0 else cube_size
+        self.units = {
+            'u' : Coordinates((self.cube_size, 0, 0)),
+            'v' : Coordinates((0, self.cube_size, 0)),
+            'w' : Coordinates((0, 0, self.cube_size))
+        }
 
     def add_vertex(self, vertex: Coordinates):
-        if not self.get_vertex_id(vertex):
+        if not (index := self.get_vertex_id(vertex)):
             new_vertex = pd.DataFrame.from_records([{'x': vertex.x, 'y': vertex.y, 'z': vertex.z}])
             self.vertices = pd.concat([self.vertices, new_vertex], ignore_index=True)
             self.last_index += 1
             self.csv.vertices += f"{self.last_index}, {vertex.x}, {vertex.y}, {vertex.z}, {self.function(vertex)}\n"
+            return self.last_index
 
-        return self.last_index
+        return index
 
     def get_vertex_id(self, coordinates: Coordinates):
         row = self.vertices[(self.vertices.x == coordinates.x) & (self.vertices.y == coordinates.y) & (self.vertices.z == coordinates.z)]
@@ -53,17 +59,15 @@ class VolumeData:
                 csv_file.write(getattr(self.csv, body_filename))
 
 
-def create_cube_vertices(volume_data: VolumeData, starting_pos: Coordinates, is_reversed: bool = False):
+def create_cube_vertices(volume_data: VolumeData, starting_pos: Coordinates, is_reversed: bool):
     """
     volume_data: VolumeData => main structure that contains important information
     starting_pos: Coordinates => starting position of the cube
 
     Return: dict of vertices ids
     """
-    u = Coordinates((volume_data.cube_size, 0, 0))
-    v = Coordinates((0, volume_data.cube_size, 0))
-    w = Coordinates((0, 0, volume_data.cube_size))
 
+    u, v, w = volume_data.units['u'], volume_data.units['v'], volume_data.units['w']
     if not is_reversed:
         cube_vertices = {                    # Example:
             'A': starting_pos,               # A (0, 0, 0)
@@ -176,18 +180,26 @@ def create_cube_tetrahedrons(volume_data: VolumeData, cube_vertices_ids: dict):
 
     volume_data.csv.tetras += tetras
 
-def build_cube_with_tetrahedrons(volume_data: VolumeData, starting_pos: Coordinates):
-    cube_vertices_ids = create_cube_vertices(volume_data=volume_data, starting_pos=starting_pos)
+def build_cube_with_tetrahedrons(volume_data: VolumeData, starting_pos: Coordinates, is_reversed: bool):
+    cube_vertices_ids = create_cube_vertices(volume_data=volume_data, starting_pos=starting_pos, is_reversed=is_reversed)
     create_cube_edges(volume_data=volume_data, cube_vertices_ids=cube_vertices_ids)
     create_cube_faces(volume_data=volume_data, cube_vertices_ids=cube_vertices_ids)
     create_cube_tetrahedrons(volume_data=volume_data, cube_vertices_ids=cube_vertices_ids)
 
 
 # FIXME Think to succession of cubes. Their faces must match
-def main():
-    volume_data = VolumeData(function=wave_function)
-    build_cube_with_tetrahedrons(volume_data=volume_data, starting_pos=Coordinates((0, 0, 0)))
+def main(cube_size: int, volume_size: dict):
+    volume_data = VolumeData(function=wave_function, cube_size=cube_size)
+
+    starting_pos = Coordinates((0, 0, 0))
+    for floor in range(volume_size['z']):
+        for row in range(volume_size['y']):
+            for column in range(volume_size['x']):
+                new_pos = starting_pos + (volume_data.units['u'] * column) + (volume_data.units['v'] * row) + (volume_data.units['w'] * floor)
+                is_reversed = ((floor + row + column) % 2) == 1
+                build_cube_with_tetrahedrons(volume_data=volume_data, starting_pos=new_pos, is_reversed=is_reversed)
+
     volume_data.save_csv("function_to_csv/csv_files/3D/")
 
 if __name__ == "__main__":
-    main()
+    main(1, {'x': 2, 'y': 2, 'z': 2})
