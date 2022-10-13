@@ -94,7 +94,7 @@ class Graph:
 
         return
 
-    def create_dual(self, G):
+    def create_dual(self):
         res = Graph(1)
         dual_union_form = []
         for edge in self.simplexes[self.order - 1]:

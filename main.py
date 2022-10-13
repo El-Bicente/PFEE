@@ -4,13 +4,20 @@ from reord.graph_structure import Graph
 from reord.reord import parse_csv, set_minimas, reord_algorithm
 from reord.mst_algo import kruskal_mst
 
-function_to_csv.main(step=1, size=9, function=function_to_csv.wave_function)
+function_to_csv.main()
 
 csv_paths = {
     "points" : "function_to_csv/generated_csv/points.csv",
     "lines" : "function_to_csv/generated_csv/lines.csv",
     "triangles" : "function_to_csv/generated_csv/triangles.csv",
     "output": "format/generated_vtp/output_graph.vtu"
+}
+
+csv_reord_path = {
+    "points" : "function_to_csv/generated_csv/reord_points.csv",
+    "lines" : "function_to_csv/generated_csv/reord_lines.csv",
+    "triangles" : "function_to_csv/generated_csv/reord_triangles.csv",
+    "output": "format/generated_vtp/reord_output_graph.vtu"
 }
 
 csv_dual_paths = {
@@ -21,13 +28,15 @@ csv_dual_paths = {
 ### Revaluation
 graph = Graph(2)
 graph = parse_csv(graph, csv_paths)
-#graph = set_minimas(graph)
-#graph = reord_algorithm(graph)
-graph.convert_to_csv(csv_paths)
+graph = set_minimas(graph)
+graph = reord_algorithm(graph)
+graph.convert_to_csv(csv_reord_path)
+graph.create_dual()[0].convert_to_csv(csv_dual_paths)
+
 #Graphe avant revaluation
-dual_non_rev, dual_non_rev_union_form = graph.create_dual(graph)
-dual_non_rev.convert_to_csv(csv_dual_paths)
-kruskal_mst(dual_non_rev, dual_non_rev_union_form)
+#dual_non_rev, dual_non_rev_union_form = graph.create_dual()
+#dual_non_rev.convert_to_csv(csv_dual_paths)
+#kruskal_mst(dual_non_rev, dual_non_rev_union_form)
 ### Generate vtu file
-csv_to_vtp.main(csv_paths)
+csv_to_vtp.main(csv_reord_path)
 csv_to_vtp.main(csv_dual_paths)

@@ -1,5 +1,5 @@
 from logging import raiseExceptions
-from reord.graph_structure import Graph, Coordinates
+from reord.graph_structure import Graph, Coordinates, Simplex
 from operator import itemgetter
 from copy import deepcopy
 import pandas as pd
@@ -20,16 +20,28 @@ def dual(a, b, F):
            return edge.ID
     raiseExceptions("Edge not found")
 
+def get_face_neighbors(graph, faceId):
+    neighbors = []
+    for faceNeighborsId in graph.adj[faceId]:
+        otherFace = graph.simplexes_id[faceNeighborsId]
+        if otherFace.order == 1:
+            for edgeNeighborsId in graph.adj[otherFace.ID]:
+                face = graph.simplexes_id[edgeNeighborsId]
+                if face.order == 2 and face.ID != faceId:
+                    neighbors.append(face.ID)
+    return neighbors
+
 # Transform a given valued complex F into a 2-1 simplicial stack F_prime
 def reord_algorithm(F):
     # Initialization
     F_prime = deepcopy(F)
     deja_vu = get_minimas(F)
-    G_past = [[] for _ in range(len(F_prime.dual_adj))]
+    G_past = set()
     queue = []
+
     for m in deja_vu:
-        for h in F.dual_adj[m]:
-            if h not in  deja_vu:
+        for h in get_face_neighbors(F, m):
+            if h not in deja_vu:
                 cost = F.simplexes_id[h].weight - F.simplexes_id[m].weight
                 if cost >= 0:
                     queue.append((cost, m, h))
@@ -48,8 +60,7 @@ def reord_algorithm(F):
             deja_vu.add(b)
 
             # G_past = G_past U {a,b}
-            G_past[a].append(b)
-            G_past[b].append(a)
+            G_past.add(dual(a, b, F))
 
             v = cpt
             cpt += 1
@@ -59,19 +70,17 @@ def reord_algorithm(F):
             F_prime.simplexes_id[b].weight = v
 
             # We look for the new edges to push
-            for c in F.dual_adj[b]:
+            for c in get_face_neighbors(F, b):
                 cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
                 if cost >= 0:
                     queue.append((cost, b, c))
 
-    # Valuation of the remaining simplices to ensure we obtain a stack
-
-    for i in range(len(F.dual_adj)):
-        not_visited = list(set(F.dual_adj[i]).difference(G_past[i]))
-        for edge in not_visited:
+    # Valuation of the remaining simplices to ensure we obtain a stack 
+    for edge in F.simplexes[1]:
+        if edge.ID not in G_past:
             # Adding the edge not to make the operation twice
-            G_past[edge].append(i)
-            F_prime.simplexes_id[dual(edge, i, F_prime)].weight = cpt
+            G_past.add(edge.ID)
+            F_prime.simplexes_id[edge.ID].weight = cpt
             cpt += 1
 
     for i in range(len(F_prime.simplexes[0])):
@@ -101,30 +110,36 @@ def parse_csv(graph, paths):
 
     return graph
 
-def find_minimas(graph, id, visited, minimas):
+def find_minimas(graph, id, visited):
     if id not in visited:
-        if all(neighbor not in minimas and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[id].weight
-        for neighbor in graph.dual_adj[id]):
-            minimas.append(id)
-        visited.append(id)
+        neighbors = get_face_neighbors(graph, id)
 
-        for neighbor in graph.dual_adj[id]:
-            find_minimas(graph, neighbor, visited, minimas)
-    return minimas
+        if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[id].weight for neighbor in neighbors):
+            graph.simplexes_id[id].weight = 0
+        visited.add(id)
+
+        for neighbor in neighbors:
+            find_minimas(graph, neighbor, visited)
+
+            
 
 def set_border_as_minimas(graph):
-    for i in range(len(graph.dual_adj)):
-        if graph.dual_adj[i] and len(graph.dual_adj[i]) <= 2:
-            graph.simplexes_id[i].weight = 0
+    visited = set()
+    for i in range(len(graph.simplexes[1])):
+        edgeId = graph.simplexes[1][i].ID
+        if len(graph.adj[edgeId]) <= 3:
+            for neighborId in graph.adj[edgeId]:
+                if graph.simplexes_id[neighborId].order == 2:
+                    graph.simplexes_id[neighborId].weight = 0
+                    visited.add(neighborId)
+                    break
+    return visited
 
 def set_minimas(graph):
     for simplex in graph.simplexes_id:
         simplex.weight += 100
-    first_id = next(i for i, j in enumerate(graph.dual_adj) if j)
 
     set_border_as_minimas(graph)
-    minimas = find_minimas(graph, first_id, [], [])
+    find_minimas(graph, graph.simplexes[2][0].ID, set())
 
-    for min in minimas:
-        graph.simplexes_id[min].weight = 0
     return graph
