@@ -1,6 +1,18 @@
+import numpy as np
+
+def check_input(size: dict) -> bool:
+    if size['x'] > 0 and size['y'] > 0 and size['z'] > 0:
+        return {'x': size['x'] + 1, 'y': size['y'] + 1, 'z': size['z'] + 1}
+
+    print('There is an error in input parameter. One of them is under zero. You can not get less than one cube.')
+    raise
+    
+
 def build_matrix_ids(size: dict):
     current_id = 0
     matrix = []
+
+    # one cube can't be composed of one vertex on each side 
     for _ in range(size['z']):
         current_floor = []
         for _ in range(size['y']):
@@ -11,11 +23,35 @@ def build_matrix_ids(size: dict):
             current_floor.append(current_row)
         matrix.append(current_floor)
 
-    print(current_id)
-    return matrix
+    return np.array(matrix)
+
+def get_local_edges(ids: dict, pos: tuple[int, int, int]):
+    local_edges = [
+        (ids[pos[2], pos[1], pos[0]], ids[pos[2], pos[1], pos[0] + 1]),
+        (ids[pos[2], pos[1], pos[0]], ids[pos[2], pos[1] + 1, pos[0]]),
+        (ids[pos[2], pos[1], pos[0]], ids[pos[2] + 1, pos[1], pos[0]])
+    ]
+
+    return local_edges
+
+def build_volume(ids: np.array):
+    reverse = False
+    edges = []
+    for z in range(ids.shape[0] - 1):
+        for y in range(ids.shape[1] - 1):
+            reverse = not reverse
+            for x in range(ids.shape[2] - 1):
+                edges += get_local_edges(ids, (x, y, z))
+
+    print(f"number of edges: {len(edges)}")
+
+                
+
 
 def main(size: dict):
-    ids = build_matrix_ids(size)
+    if (size := check_input(size)):       
+        ids = build_matrix_ids(size)
+        build_volume(ids)
 
 if __name__ == "__main__":
-    main(size = {'x': 100, 'y': 100, 'z': 100})
+    main(size = {'x': 10, 'y': 10, 'z': 10})
