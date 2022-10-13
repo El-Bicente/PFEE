@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 def check_input(size: dict) -> bool:
     if size['x'] > 0 and size['y'] > 0 and size['z'] > 0:
@@ -25,23 +26,33 @@ def build_matrix_ids(size: dict):
 
     return np.array(matrix)
 
-def get_local_edges(ids: dict, pos: tuple[int, int, int]):
+def get_local_edges(ids: dict, pos: tuple[int, int, int], reversed: bool):
     local_edges = [
         (ids[pos[2], pos[1], pos[0]], ids[pos[2], pos[1], pos[0] + 1]),
         (ids[pos[2], pos[1], pos[0]], ids[pos[2], pos[1] + 1, pos[0]]),
         (ids[pos[2], pos[1], pos[0]], ids[pos[2] + 1, pos[1], pos[0]])
     ]
 
+    if not reversed:
+        local_edges.append((ids[pos[2], pos[1], pos[0] + 1], ids[pos[2] + 1, pos[1], pos[0]]))
+        local_edges.append((ids[pos[2], pos[1] + 1, pos[0]], ids[pos[2] + 1, pos[1], pos[0]]))
+        local_edges.append((ids[pos[2], pos[1] + 1, pos[0]], ids[pos[2], pos[1], pos[0] + 1]))
+
+    else:
+        local_edges.append((ids[pos[2], pos[1], pos[0]], ids[pos[2] + 1, pos[1], pos[0] + 1]))
+        local_edges.append((ids[pos[2], pos[1], pos[0]], ids[pos[2] + 1, pos[1] + 1, pos[0]]))
+        local_edges.append((ids[pos[2], pos[1], pos[0]], ids[pos[2], pos[1] + 1, pos[0] + 1]))
+
     return local_edges
 
 def build_volume(ids: np.array):
-    reverse = False
+    reversed = False
     edges = []
     for z in range(ids.shape[0] - 1):
         for y in range(ids.shape[1] - 1):
-            reverse = not reverse
+            reversed = not reversed
             for x in range(ids.shape[2] - 1):
-                edges += get_local_edges(ids, (x, y, z))
+                edges += get_local_edges(ids, (x, y, z), reversed)
 
     print(f"number of edges: {len(edges)}")
 
@@ -51,7 +62,10 @@ def build_volume(ids: np.array):
 def main(size: dict):
     if (size := check_input(size)):       
         ids = build_matrix_ids(size)
+
+        start_time = time.time()
         build_volume(ids)
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == "__main__":
     main(size = {'x': 10, 'y': 10, 'z': 10})
