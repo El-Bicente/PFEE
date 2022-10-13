@@ -19,13 +19,15 @@ csv_dual_paths = {
     "output": "format/generated_vtp/output_dual_graph.vtu"
 }
 ### Revaluation
-graph = Graph()
+graph = Graph(2)
 graph = parse_csv(graph, csv_paths)
 #graph = set_minimas(graph)
 #graph = reord_algorithm(graph)
 graph.convert_to_csv(csv_paths)
-graph.convert_dual_to_csv(csv_dual_paths)
-kruskal_mst(graph)
+#Graphe avant revaluation
+dual_non_rev, dual_non_rev_union_form = graph.create_dual(graph)
+dual_non_rev.convert_to_csv(csv_dual_paths)
+kruskal_mst(dual_non_rev, dual_non_rev_union_form)
 ### Generate vtu file
 csv_to_vtp.main(csv_paths)
 csv_to_vtp.main(csv_dual_paths)

@@ -63,7 +63,7 @@ def reord_algorithm(F):
                 cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
                 if cost >= 0:
                     queue.append((cost, b, c))
-    
+
     # Valuation of the remaining simplices to ensure we obtain a stack
 
     for i in range(len(F.dual_adj)):
@@ -73,7 +73,7 @@ def reord_algorithm(F):
             G_past[edge].append(i)
             F_prime.simplexes_id[dual(edge, i, F_prime)].weight = cpt
             cpt += 1
-    
+
     for i in range(len(F_prime.simplexes[0])):
         F_prime.simplexes[0][i].weight = cpt
         cpt += 1
@@ -81,31 +81,33 @@ def reord_algorithm(F):
     return F_prime
 
 def parse_csv(graph, paths):
-    faces = pd.read_csv(paths["triangles"])
-    points = pd.read_csv(paths["points"])
-    lines = pd.read_csv(paths["lines"])
+    if ("points" in paths):
+        points = pd.read_csv(paths["points"])
+        for _, row in points.iterrows():
+            coords = [Coordinates([row['X'], row['Y'], row['Z']])]
+            graph.add_simplex(coords, row['Weight'])
 
-    for _, row in points.iterrows():
-        coords = [Coordinates([row['X'], row['Y'], row['Z']])]
-        graph.add_simplex(coords, row['Weight'])
+    if ("lines" in paths):
+        lines = pd.read_csv(paths["lines"])
+        for _, row in lines.iterrows():
+            coords = [graph.simplexes[0][int(row['P1'])].coords[0], graph.simplexes[0][int(row['P2'])].coords[0]]
+            graph.add_simplex(coords, row['Weight'])
 
-    for _, row in lines.iterrows():
-        coords = [graph.simplexes[0][int(row['P1'])].coords[0], graph.simplexes[0][int(row['P2'])].coords[0]]
-        graph.add_simplex(coords, row['Weight'])
-
-    for _, row in faces.iterrows():
-        coords = [graph.simplexes[0][int(row['S1'])].coords[0], graph.simplexes[0][int(row['S2'])].coords[0], graph.simplexes[0][int(row['S3'])].coords[0]]
-        graph.add_simplex(coords, row['Weight'])
+    if ("triangles" in paths):
+        faces = pd.read_csv(paths["triangles"])
+        for _, row in faces.iterrows():
+            coords = [graph.simplexes[0][int(row['S1'])].coords[0], graph.simplexes[0][int(row['S2'])].coords[0], graph.simplexes[0][int(row['S3'])].coords[0]]
+            graph.add_simplex(coords, row['Weight'])
 
     return graph
 
 def find_minimas(graph, id, visited, minimas):
     if id not in visited:
-        if all(neighbor not in minimas and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[id].weight 
+        if all(neighbor not in minimas and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[id].weight
         for neighbor in graph.dual_adj[id]):
             minimas.append(id)
         visited.append(id)
-        
+
         for neighbor in graph.dual_adj[id]:
             find_minimas(graph, neighbor, visited, minimas)
     return minimas
@@ -119,7 +121,7 @@ def set_minimas(graph):
     for simplex in graph.simplexes_id:
         simplex.weight += 100
     first_id = next(i for i, j in enumerate(graph.dual_adj) if j)
-    
+
     set_border_as_minimas(graph)
     minimas = find_minimas(graph, first_id, [], [])
 

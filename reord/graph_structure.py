@@ -57,22 +57,14 @@ def create_csv(df, columns, filename):
     res.to_csv(filename, index=False)
 
 class Graph:
-    def __init__(self):
+    def __init__(self, order):
         #List where each position represents the ID and each value represents
         #the simplex
         self.simplexes_id = []
-        self.simplexes = [[], [], []]
+        self.order = order
+        self.simplexes = [[] for i in range (self.order + 1)]
         #Adjency list of the graph
         self.adj = []
-
-        #List of dual graph 0-faces or vertices
-        self.dual_vertices = []
-        #List of dual graph 1-faces or edges
-        self.dual_edges = []
-        #Adjency list of the dual_graph
-        self.dual_adj = []
-        #Dual graph in union_find form
-        self.dual_union_form = []
 
 
     def convert_to_csv(self, paths):
@@ -86,70 +78,46 @@ class Graph:
             df_points.append((i, smp.coords[0].x, smp.coords[0].y, smp.coords[0].z, smp.weight))
             pts_ids[smp.coords[0]] = i
 
-        for i in range (len(self.simplexes[1])):
-            smp = self.simplexes[1][i]
-            df_lines.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], smp.weight))
-
-        for i in range (len(self.simplexes[2])):
-            smp = self.simplexes[2][i]
-            df_triangle.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], pts_ids[smp.coords[2]], smp.weight))
-
         create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], paths["points"])
+
         if ("lines" in paths):
+            for i in range (len(self.simplexes[1])):
+                smp = self.simplexes[1][i]
+                df_lines.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], smp.weight))
             create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"])
+
         if ("triangles" in paths):
+            for i in range (len(self.simplexes[2])):
+                smp = self.simplexes[2][i]
+                df_triangle.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], pts_ids[smp.coords[2]], smp.weight))
             create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], paths["triangles"])
 
         return
 
-    def convert_dual_to_csv(self, paths):
-        df_points = []#np.zeros((len(self.simplexes[0]), 5))
-        df_lines = []#np.zeros((len(self.simplexes[1]), 3))
-        pts_ids = {}
+    def create_dual(self, G):
+        res = Graph(1)
+        dual_union_form = []
+        for edge in self.simplexes[self.order - 1]:
+            neighboors = []
+            for neigh in self.adj[edge.ID]:
+                neigh = self.simplexes_id[neigh]
+                if neigh.order == self.order:
+                    neighboors.append(neigh)
 
-        for i in range (len(self.dual_vertices)):
-            smp = self.dual_vertices[i]
-            df_points.append((i, smp.coords[0].x, smp.coords[0].y, smp.coords[0].z, smp.weight))
-            pts_ids[smp.coords[0]] = i
+            if (len(neighboors) != 2):
+                continue
 
-        for i in range (len(self.dual_edges)):
-            smp = self.dual_edges[i]
-            df_lines.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], smp.weight))
+            u = neighboors[0]
+            u_coords = u.get_centroid()
+            v = neighboors[1]
+            v_coords = v.get_centroid()
+            w = edge.weight
 
-        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], paths["points"])
-        create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"])
-
-        return
-
-
-    def insert_dual(self, simplex_coords, weight):
-        new_smp_id = len(self.dual_vertices) + len(self.dual_edges)
-        new_simplex = Simplex(simplex_coords, new_smp_id, weight)
-
-        #Verify if 0-face already exists
-        #Can't happen with 1-face and there is no 2-faces in dual graph
-        if (len(simplex_coords) == 1):
-            for i in range (len(self.dual_vertices)):
-                simplex = self.dual_vertices[i]
-                if simplex.coords == simplex_coords:
-                    return i, simplex.ID
-            self.dual_vertices.append(new_simplex)
-            return len(self.dual_vertices) - 1, new_smp_id
-
-        self.dual_edges.append(new_simplex)
-        return len(self.dual_edges) - 1, new_smp_id
-
-
-    #Return a 1-face simplex that is shared by two 2-faces ones
-    def find_concurent_2_faces(self, smp1, smp2):
-        smp1_neighbors = self.get_neighboors(smp1.ID)
-        smp2_neighbors = self.get_neighboors(smp2.ID)
-        res = []
-        for smp_ID in smp1_neighbors:
-            smp = self.simplexes_id[smp_ID]
-            if (smp.order == 1 and smp_ID in smp2_neighbors):
-                res.append(smp)
-        return res[0]
+            node1_ID = res.add_simplex([u_coords], weight = u.weight)
+            node2_ID = res.add_simplex([v_coords], weight = v.weight)
+            edge_ID = res.add_simplex([u_coords, v_coords], weight = w)
+            dual_union_form.append([node1_ID, node2_ID, w])
+        return res, dual_union_form
 
     def add_simplex(self, coord, weight=0.0):
         simplex = Simplex(coord, len(self.simplexes_id), weight)
@@ -157,7 +125,6 @@ class Graph:
         self.simplexes[simplex.order].append(simplex)
 
         self.adj.append([])
-        self.dual_adj.append([])
 
         for smp_orders in self.simplexes:
             for smp in smp_orders:
@@ -179,22 +146,6 @@ class Graph:
                         or  (smp.order == 1 and (smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords))):
                         self.adj[simplex.ID].append(smp.ID)
                         self.adj[smp.ID].append(simplex.ID)
-                    if  (smp.order == 2 and ((smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords)
-                        or  (smp.coords[1] in simplex.coords and smp.coords[2] in simplex.coords)
-                        or  (smp.coords[0] in simplex.coords and smp.coords[2] in simplex.coords))):
-                        vert1_ID, vert1_ID_global = self.insert_dual([simplex.get_centroid()], simplex.weight)
-                        vert2_ID , vert2_ID_global = self.insert_dual([smp.get_centroid()], smp.weight)
-
-                        new_dual_edge = self.find_concurent_2_faces(simplex, smp)
-                        edge_ID, edge_ID_global = self.insert_dual([self.dual_vertices[vert1_ID].coords[0], self.dual_vertices[vert2_ID].coords[0]], new_dual_edge.weight)
-
-
-                        self.dual_adj[vert1_ID_global].append(edge_ID_global)
-                        self.dual_adj[vert2_ID_global].append(edge_ID_global)
-                        self.dual_adj[edge_ID_global].append(vert2_ID_global)
-                        self.dual_adj[edge_ID_global].append(vert1_ID_global)
-
-                        self.dual_union_form.append([vert1_ID, vert2_ID, new_dual_edge.weight])
 
         return simplex.ID
 
