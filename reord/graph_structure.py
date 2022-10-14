@@ -13,6 +13,9 @@ class Coordinates:
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
 
+    def copy(self):
+        return Coordinates((self.x, self.y, self.z))
+
     def to_string(self):
         return f'(x: {self.x}, y: {self.y}, z:{self.z})'
 
@@ -96,7 +99,6 @@ class Graph:
 
     def create_dual(self):
         res = Graph(1)
-        dual_union_form = []
         for edge in self.simplexes[self.order - 1]:
             neighboors = []
             for neigh in self.adj[edge.ID]:
@@ -113,18 +115,25 @@ class Graph:
             v_coords = v.get_centroid()
             w = edge.weight
 
-            node1_ID = res.add_simplex([u_coords], weight = u.weight)
-            node2_ID = res.add_simplex([v_coords], weight = v.weight)
-            edge_ID = res.add_simplex([u_coords, v_coords], weight = w)
-            dual_union_form.append([node1_ID, node2_ID, w])
-        return res, dual_union_form
+            res.add_simplex([u_coords], weight = u.weight)
+            res.add_simplex([v_coords], weight = v.weight)
+            res.add_simplex([u_coords, v_coords], weight = w)
+        return res
 
     def add_simplex(self, coord, weight=0.0):
-        simplex = Simplex(coord, len(self.simplexes_id), weight)
+        new_id = len(self.simplexes_id)
+        simplex = Simplex(coord, new_id, weight)
+
+        #Verify if a simplex with the same coordinates already exists
+        for smp_orders in self.simplexes[simplex.order]:
+            if (smp_orders.coords == coord):
+                return smp_orders.ID
+
         self.simplexes_id.append(simplex)
         self.simplexes[simplex.order].append(simplex)
 
         self.adj.append([])
+
 
         for smp_orders in self.simplexes:
             for smp in smp_orders:
@@ -148,6 +157,8 @@ class Graph:
                         self.adj[smp.ID].append(simplex.ID)
 
         return simplex.ID
+
+
 
     def get_neighboors(self, ID):
         return self.adj[ID]
