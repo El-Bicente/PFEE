@@ -4,7 +4,7 @@ from reord.graph_structure import Graph
 from reord.reord import parse_csv, set_minimas, reord_algorithm
 from reord.mst_algo import kruskal_mst
 
-function_to_csv.main()
+function_to_csv.main(step=1, size=9, function=function_to_csv.wave_function)
 
 csv_paths = {
     "points" : "function_to_csv/generated_csv/points.csv",
@@ -40,11 +40,12 @@ csv_comp_dual_paths = {
 ### Revaluation
 graph = Graph(2)
 graph = parse_csv(graph, csv_paths)
-#graph = set_minimas(graph)
-#graph = reord_algorithm(graph)
+csv_to_vtp.main(csv_paths)
+graph = set_minimas(graph)
+graph = reord_algorithm(graph)
 
 #Graph before revaluation
-dual_non_rev = graph.create_dual(graph)
+dual_non_rev = graph.create_dual()
 dual_non_rev.convert_to_csv(csv_dual_paths)
 
 #Application of mst
