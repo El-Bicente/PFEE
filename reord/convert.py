@@ -141,7 +141,7 @@ def build_glyph(vectors_pts, vectors_dir):
 
     writer = vtk.vtkXMLUnstructuredGridWriter()
     writer.SetInputConnection(add_arrows.GetOutputPort())
-    writer.SetFileName('output2.vtu')
+    writer.SetFileName('vectors.vtu')
     writer.SetInputData(vtk_ungrid_glyph)
 
     writer.Write()

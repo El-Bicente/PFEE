@@ -54,6 +54,20 @@ class Simplex:
         strs = [elm.to_string() for elm in self.coords]
         return "[" + ", ".join(strs) + "]"
 
+    def get_centroid(self):
+        div_degree = (self.order + 1)
+        centroid = Coordinates((0, 0, 0))
+        for point_coords in self.coords:
+            centroid.x += point_coords.x
+            centroid.y += point_coords.y
+            centroid.z += point_coords.z
+
+        centroid.x /= div_degree
+        centroid.y /= div_degree
+        centroid.z /= div_degree
+
+        return centroid
+
 def create_csv(df, columns, filename):
     res = pd.DataFrame(df)
     res.columns = columns
