@@ -43,6 +43,7 @@ graph = parse_csv(graph, csv_paths)
 csv_to_vtp.main(csv_paths)
 graph = set_minimas(graph)
 graph = reord_algorithm(graph)
+graph.convert_to_csv(csv_reord_path)
 
 #Graph before revaluation
 dual_non_rev = graph.create_dual()
