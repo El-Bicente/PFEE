@@ -75,7 +75,7 @@ def reord_algorithm(F):
                 if cost >= 0:
                     queue.append((cost, b, c))
 
-    # Valuation of the remaining simplices to ensure we obtain a stack 
+    # Valuation of the remaining simplices to ensure we obtain a stack
     for edge in F.simplexes[1]:
         if edge.ID not in G_past:
             # Adding the edge not to make the operation twice
@@ -121,7 +121,7 @@ def find_minimas(graph, id, visited):
         for neighbor in neighbors:
             find_minimas(graph, neighbor, visited)
 
-            
+
 
 def set_border_as_minimas(graph):
     visited = set()
