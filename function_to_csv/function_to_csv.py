@@ -4,11 +4,6 @@
 import pandas as pd
 import math
 import numpy as np
-#import matplotlib.pyplot as plt
-
-
-def wave_function(x, y):
-    return math.sin(math.sqrt(x*x + y*y))
 
 def build_points(f, step, size):
     spacing = step
@@ -102,6 +97,3 @@ def main(step, size, function):
     point_ids, points_df = build_points(function, step, size)
     lines_df = build_lines(point_ids, points_df, function, size)
     build_triangle(point_ids, lines_df, step, points_df, function, size)
-
-if __name__ == "__main__":
-    main(step=1, size=9, function=wave_function)
