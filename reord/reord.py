@@ -3,6 +3,8 @@ from reord.graph_structure import Graph, Coordinates, Simplex
 from operator import itemgetter
 from copy import deepcopy
 import pandas as pd
+import os
+from format import csv_to_vtp
 
 def get_minimas(F):
     minimas = set()
@@ -31,8 +33,25 @@ def get_face_neighbors(graph, faceId):
                     neighbors.append(face.ID)
     return neighbors
 
+# Set all weights to 0 for video purpose
+def set_to_black(graph):
+    for simplex in graph.simplexes_id:
+        simplex.weight = 0
+    return graph
+
+def generate_video_vtp(graph, cpt):
+    csv_video_path = {
+            "points" : "reord/generate_video/reord_points.csv",
+            "lines" : "reord/generate_video/reord_lines.csv",
+            "triangles" : "reord/generate_video/reord_triangles.csv",
+            "output": f"reord/generate_video/file{cpt}.vtu"
+        }
+    
+    graph.convert_to_csv(csv_video_path)
+    csv_to_vtp.main(csv_video_path)
+
 # Transform a given valued complex F into a 2-1 simplicial stack F_prime
-def reord_algorithm(F):
+def reord_algorithm(F, video = False):
     # Initialization
     F_prime = deepcopy(F)
     deja_vu = get_minimas(F)
@@ -48,10 +67,16 @@ def reord_algorithm(F):
 
     # Propagation until the queue is empty
     cpt = 1
+
+    if video:
+        dir = 'reord/generate_video'
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+        F_prime = set_to_black(F_prime)
+    
     while queue:
         count, a, b = max(queue,key=itemgetter(0))
         queue.remove((count, a, b))
-
         # We treat ab when adding it to G_past does not create a cycle or connect
         # two different minima
         if a not in deja_vu or b not in deja_vu:
@@ -62,12 +87,18 @@ def reord_algorithm(F):
             # G_past = G_past U {a,b}
             G_past.add(dual(a, b, F))
 
-            v = cpt
+            if video:
+                v = 1000
+            else:
+                v = cpt
             cpt += 1
 
             # F_prime(Dual(ab)) = v
             F_prime.simplexes_id[dual(a, b, F_prime)].weight = v
             F_prime.simplexes_id[b].weight = v
+
+            if video:
+                generate_video_vtp(F_prime, cpt)
 
             # We look for the new edges to push
             for c in get_face_neighbors(F, b):
@@ -80,11 +111,20 @@ def reord_algorithm(F):
         if edge.ID not in G_past:
             # Adding the edge not to make the operation twice
             G_past.add(edge.ID)
-            F_prime.simplexes_id[edge.ID].weight = cpt
+
+            if video:
+                F_prime.simplexes_id[edge.ID].weight = 1000
+                #generate_video_vtp(F_prime, cpt)
+            else:
+                F_prime.simplexes_id[edge.ID].weight = cpt
             cpt += 1
 
     for i in range(len(F_prime.simplexes[0])):
-        F_prime.simplexes[0][i].weight = cpt
+        if video:
+                F_prime.simplexes[0][i].weight = 1000
+                #generate_video_vtp(F_prime, cpt)
+        else:
+            F_prime.simplexes[0][i].weight = cpt
         cpt += 1
 
     return F_prime
