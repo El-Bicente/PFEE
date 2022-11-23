@@ -36,7 +36,10 @@ def get_face_neighbors(graph, faceId):
 # Set all weights to 0 for video purpose
 def set_to_black(graph):
     for simplex in graph.simplexes_id:
-        simplex.weight = 0
+        if simplex.weight == 0:
+            simplex.weight = 1000
+        else:
+            simplex.weight = 0
     return graph
 
 def generate_video_vtp(graph, cpt):
@@ -162,17 +165,17 @@ def find_minimas(graph, id, visited):
             find_minimas(graph, neighbor, visited)
 
 
-
+# finding vertices on the border
 def set_border_as_minimas(graph):
     visited = set()
-    for i in range(len(graph.simplexes[1])):
-        edgeId = graph.simplexes[1][i].ID
-        if len(graph.adj[edgeId]) <= 3:
-            for neighborId in graph.adj[edgeId]:
+    for i in range(len(graph.simplexes[0])):
+        vertexId = graph.simplexes[0][i].ID
+        if len(graph.adj[vertexId]) <= 9:
+            for neighborId in graph.adj[vertexId]:
                 if graph.simplexes_id[neighborId].order == 2:
                     graph.simplexes_id[neighborId].weight = 0
                     visited.add(neighborId)
-                    break
+
     return visited
 
 def set_minimas(graph):
