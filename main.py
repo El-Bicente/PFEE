@@ -8,8 +8,7 @@ import math
 def wave_function(x, y):
     return math.sin(math.sqrt(x*x + y*y))
 
-
-function_to_csv.main(step=1, size=9, function=wave_function)
+function_to_csv.main(step=1, size=18, function=wave_function)
 
 csv_paths = {
     "points" : "function_to_csv/generated_csv/points.csv",
@@ -73,3 +72,6 @@ graph = parse_csv(graph, csv_paths)
 csv_to_vtp.main(csv_paths)
 graph = set_minimas(graph)
 graph = reord_algorithm(graph,video=True)
+
+graph.convert_to_csv(csv_reord_path)
+csv_to_vtp.main(csv_reord_path)

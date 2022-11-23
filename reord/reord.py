@@ -153,16 +153,13 @@ def parse_csv(graph, paths):
 
     return graph
 
-def find_minimas(graph, id, visited):
-    if id not in visited:
-        neighbors = get_face_neighbors(graph, id)
-
-        if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[id].weight for neighbor in neighbors):
-            graph.simplexes_id[id].weight = 0
-        visited.add(id)
-
-        for neighbor in neighbors:
-            find_minimas(graph, neighbor, visited)
+def find_minimas(graph):
+    for face in graph.simplexes[2]:
+        faceId = face.ID
+        neighbors = get_face_neighbors(graph, faceId)
+        if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight > graph.simplexes_id[faceId].weight for neighbor in neighbors):
+            graph.simplexes_id[faceId].weight = 0
+    
 
 
 # finding vertices on the border
@@ -183,6 +180,6 @@ def set_minimas(graph):
         simplex.weight += 100
 
     set_border_as_minimas(graph)
-    find_minimas(graph, graph.simplexes[2][0].ID, set())
+    find_minimas(graph)
 
     return graph
