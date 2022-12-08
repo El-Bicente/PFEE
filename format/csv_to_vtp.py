@@ -143,19 +143,11 @@ def build_glyph(vectors_pts, vectors_dir, output_file='format/generated_vtp/outp
     vtk_ungrid_glyph = vtk.vtkPolyData()
     vtk_vec_pts = vtk.vtkPoints()
 
-    print(vectors_pts[vectors_pts.index == 107])
-    print(vectors_dir[vectors_dir.index == 107])
-    print(vectors_pts.shape)
-    print(vectors_dir.shape)
-
     init_points(vtk_vec_pts, vectors_pts)
     vtk_ungrid_glyph.SetPoints(vtk_vec_pts)
-    print(vtk_vec_pts.GetNumberOfPoints())
 
     build_vectors(vtk_ungrid_glyph, vectors_dir)
     arrow_source = vtk.vtkArrowSource()
-
-    print(vtk_ungrid_glyph.GetNumberOfCells())
 
     add_arrows = vtk.vtkGlyph3D()
     add_arrows.SetSourceConnection(arrow_source.GetOutputPort())
