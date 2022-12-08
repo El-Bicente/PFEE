@@ -18,6 +18,5 @@ format/*.ipynb
 __pycache__
 
 #Specific
-format/generated_vtp/*.vtu
-format/generated_vtp/*.vtp
+format/generated_vtp/*
 Function_to_csv/generated_csv/*.csv
