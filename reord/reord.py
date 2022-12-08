@@ -78,13 +78,11 @@ def reord_algorithm(F, video = False):
         F_prime = set_to_black(F_prime)
     
     while queue:
-        count, a, b = max(queue,key=itemgetter(0))
-        queue.remove((count, a, b))
+        cost, a, b = max(queue,key=itemgetter(0))
+        queue.remove((cost, a, b))
         # We treat ab when adding it to G_past does not create a cycle or connect
         # two different minima
-        if a not in deja_vu or b not in deja_vu:
-            cost = F.simplexes_id[b].weight - F.simplexes_id[a].weight
-            queue.append((cost, a, b))
+        if b not in deja_vu:
             deja_vu.add(b)
 
             # G_past = G_past U {a,b}
@@ -105,9 +103,10 @@ def reord_algorithm(F, video = False):
 
             # We look for the new edges to push
             for c in get_face_neighbors(F, b):
-                cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
-                if cost >= 0:
-                    queue.append((cost, b, c))
+                if c not in deja_vu:
+                    cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
+                    if cost >= 0:
+                        queue.append((cost, b, c))
 
     # Valuation of the remaining simplices to ensure we obtain a stack
     for edge in F.simplexes[1]:
