@@ -17,8 +17,6 @@ def gradient_field_builder(graph: Graph, paths):
                 csv_vector_dir_file += f"{vector_id}, {adj_spm_centroid.x - smp_centroid.x}, {adj_spm_centroid.y - smp_centroid.y}, {adj_spm_centroid.z - smp_centroid.z}\n"
                 vector_id += 1
 
-                print(smp.ID, adj_smp.ID, f"{vector_id}, {smp_centroid.x}, {smp_centroid.y}, {smp_centroid.z}", f"| {vector_id}, {adj_spm_centroid.x - smp_centroid.x}, {adj_spm_centroid.y - smp_centroid.y}, {adj_spm_centroid.z - smp_centroid.z}")
-                #220, 306 ==> 453
     with open(paths["vectors"], "w") as vectors_file:
         vectors_file.write(csv_vector_file)
 
