@@ -16,3 +16,7 @@ format/*.ipynb
 .vscode/
 .idea/
 __pycache__
+
+#Specific
+format/generated_vtp/*.vtu
+format/generated_vtp/*.vtp
