@@ -72,9 +72,8 @@ def main():
     parser = get_parser()
     args = parser.parse_args()  
 
-    function_to_csv.main(step=1, size=9, function=wave_function)
+    function_to_csv.main(step=1, size=18, function=wave_function)
 
-    """
     ### Graph creation
     start_time = time.time()
 
@@ -87,7 +86,7 @@ def main():
     ### Revaluation
     start_time = time.time()
 
-    graph = set_minimas(graph)
+    graph = set_minimas(graph, mode=args.minimas, map=True)
     graph = reord_algorithm(graph, video=False)
     graph.convert_to_csv(csv_reord_path)
 
@@ -123,18 +122,18 @@ def main():
     csv_to_vtp.build_graph_mesh(csv_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
-    """
 
+    """
     ### Test
 
     graph = Graph(2)
     graph = parse_csv(graph, csv_paths)
     csv_to_vtp.build_graph_mesh(csv_paths)
 
-    graph = set_minimas(graph, args.minimas)
+    graph = set_minimas(graph, args.minimas, map=True)
     graph = reord_algorithm(graph, video=False)
     graph.convert_to_csv(csv_reord_path)
     csv_to_vtp.build_graph_mesh(csv_reord_path)
-
+    """
 if __name__ == "__main__":
     main()

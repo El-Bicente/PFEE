@@ -211,12 +211,24 @@ def set_border_as_minimas(graph):
 
     return visited
 
-def set_minimas(graph, mode):
-    print(f"mode = {mode}")
+map_minima_path = {
+            "points" : "function_to_csv/generated_csv/map_minima_points.csv",
+            "lines" : "function_to_csv/generated_csv/map_minima_lines.csv",
+            "triangles" : "function_to_csv/generated_csv/map_minima_triangles.csv",
+            "output": "format/generated_vtp/map_minima_output_graph.vtu"
+        }
+
+def set_minimas(graph, mode, map=False):
     for simplex in graph.simplexes_id:
         simplex.weight += 100
 
     set_border_as_minimas(graph)
     find_minimas(graph, mode)
+
+    if map:
+        copy = deepcopy(graph)
+        map = set_to_black(copy)
+        copy.convert_to_csv(map_minima_path)
+        csv_to_vtp.build_graph_mesh(map_minima_path)
 
     return graph
