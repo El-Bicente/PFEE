@@ -20,3 +20,4 @@ __pycache__
 #Specific
 format/generated_vtp/*.vtu
 format/generated_vtp/*.vtp
+Function_to_csv/generated_csv/*.csv
