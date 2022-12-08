@@ -22,7 +22,22 @@ def dual(a, b, F):
            return edge.ID
     raiseExceptions("Edge not found")
 
-def get_face_neighbors(graph, faceId):
+def get_diagonaly_neighbors(graph, faceId, neighbors):
+    points = []
+    for faceNeighborsId in graph.adj[faceId]:
+        otherFace = graph.simplexes_id[faceNeighborsId]
+        if otherFace.order == 0:
+            points.append(otherFace.ID)
+    
+    for pointId in points:   
+        for pointNeighborsId in graph.adj[pointId]:
+            otherFace = graph.simplexes_id[pointNeighborsId]
+            if otherFace.order == 2 and otherFace.ID not in neighbors and otherFace.ID != faceId:
+                neighbors.append(otherFace.ID)
+    
+    return neighbors
+
+def get_face_neighbors(graph, faceId, mode):
     neighbors = []
     for faceNeighborsId in graph.adj[faceId]:
         otherFace = graph.simplexes_id[faceNeighborsId]
@@ -31,6 +46,22 @@ def get_face_neighbors(graph, faceId):
                 face = graph.simplexes_id[edgeNeighborsId]
                 if face.order == 2 and face.ID != faceId:
                     neighbors.append(face.ID)
+
+    if mode > 1:
+        return get_diagonaly_neighbors(graph, faceId, neighbors)
+
+    return neighbors
+
+def get_face_neighbors_reval(graph, faceId):
+    neighbors = []
+    for faceNeighborsId in graph.adj[faceId]:
+        otherFace = graph.simplexes_id[faceNeighborsId]
+        if otherFace.order == 1:
+            for edgeNeighborsId in graph.adj[otherFace.ID]:
+                face = graph.simplexes_id[edgeNeighborsId]
+                if face.order == 2 and face.ID != faceId:
+                    neighbors.append(face.ID)
+
     return neighbors
 
 # Set all weights to 0 for video purpose
@@ -62,7 +93,7 @@ def reord_algorithm(F, video = False):
     queue = []
 
     for m in deja_vu:
-        for h in get_face_neighbors(F, m):
+        for h in get_face_neighbors_reval(F, m):
             if h not in deja_vu:
                 cost = F.simplexes_id[h].weight - F.simplexes_id[m].weight
                 if cost >= 0:
@@ -102,7 +133,7 @@ def reord_algorithm(F, video = False):
                 generate_video_vtp(F_prime, cpt)
 
             # We look for the new edges to push
-            for c in get_face_neighbors(F, b):
+            for c in get_face_neighbors_reval(F, b):
                 if c not in deja_vu:
                     cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
                     if cost >= 0:
@@ -152,12 +183,18 @@ def parse_csv(graph, paths):
 
     return graph
 
-def find_minimas(graph):
+def find_minimas(graph, mode):
     for face in graph.simplexes[2]:
         faceId = face.ID
-        neighbors = get_face_neighbors(graph, faceId)
-        if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight > graph.simplexes_id[faceId].weight for neighbor in neighbors):
-            graph.simplexes_id[faceId].weight = 0
+        neighbors = get_face_neighbors(graph, faceId, mode)
+
+        if mode % 2 == 0:
+            if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight > graph.simplexes_id[faceId].weight for neighbor in neighbors):
+                graph.simplexes_id[faceId].weight = 0
+        
+        if mode % 2 == 1:
+            if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[faceId].weight for neighbor in neighbors):
+                graph.simplexes_id[faceId].weight = 0
     
 
 
@@ -174,11 +211,12 @@ def set_border_as_minimas(graph):
 
     return visited
 
-def set_minimas(graph):
+def set_minimas(graph, mode):
+    print(f"mode = {mode}")
     for simplex in graph.simplexes_id:
         simplex.weight += 100
 
     set_border_as_minimas(graph)
-    find_minimas(graph)
+    find_minimas(graph, mode)
 
     return graph

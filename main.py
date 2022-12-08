@@ -4,13 +4,9 @@ from reord.graph_structure import Graph
 from reord.reord import parse_csv, set_minimas, reord_algorithm
 from reord.mst_algo import kruskal_mst
 from gradient_field.gradient_field import gradient_field_builder
+import argparse
 import math
 import time
-
-def wave_function(x, y):
-    return math.sin(math.sqrt(x*x + y*y))
-
-function_to_csv.main(step=1, size=18, function=wave_function)
 
 csv_paths = {
     "points" : "function_to_csv/generated_csv/points.csv",
@@ -50,58 +46,95 @@ vector_paths = {
     "output": "format/generated_vtp/output_gvf.vtp"
 }
 
+def wave_function(x, y):
+    return math.sin(math.sqrt(x*x + y*y))
+
 def time_exec(func, name, *arg):
     start_time = time.time()
     res = func(*arg)
     print(f"{name} in seconds: {(time.time() - start_time)}")
     return res
 
+def get_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="PFEE"
+    )
+    parser.add_argument(
+        "-m", "--minimas", required=True,
+        help="Minima modes: - 0: inférieur strict - 1: inférieur ou égal - 2: minima isolés forcés avec inférieur strict - 3: minima isolés forcés avec inférieur ou égal",
+        type=int
+    )
 
-### Graph creation
-start_time = time.time()
+    return parser
 
-graph = Graph(2)
-graph = parse_csv(graph, csv_paths)
-csv_to_vtp.build_graph_mesh(csv_paths)
+def main():
 
-print(f"Graph Creation in seconds: {(time.time() - start_time)}")
+    parser = get_parser()
+    args = parser.parse_args()  
 
-### Revaluation
-start_time = time.time()
+    function_to_csv.main(step=1, size=9, function=wave_function)
 
-graph = set_minimas(graph)
-graph = reord_algorithm(graph, video=False)
-graph.convert_to_csv(csv_reord_path)
+    """
+    ### Graph creation
+    start_time = time.time()
 
-print(f"Revaluation in seconds: {(time.time() - start_time)}")
+    graph = Graph(2)
+    graph = parse_csv(graph, csv_paths)
+    csv_to_vtp.build_graph_mesh(csv_paths)
 
-#Graph after revaluation
-start_time = time.time()
+    print(f"Graph Creation in seconds: {(time.time() - start_time)}")
 
-dual_rev = graph.create_dual()
-dual_rev.convert_to_csv(csv_dual_paths)
+    ### Revaluation
+    start_time = time.time()
 
-print(f"Dual graph Creation in seconds: {(time.time() - start_time)}")
+    graph = set_minimas(graph)
+    graph = reord_algorithm(graph, video=False)
+    graph.convert_to_csv(csv_reord_path)
 
-#Gradient field creation
-start_time = time.time()
+    print(f"Revaluation in seconds: {(time.time() - start_time)}")
 
-gradient_field_builder(dual_rev, vector_paths)
+    #Graph after revaluation
+    start_time = time.time()
 
-print(f"GVF in seconds: {(time.time() - start_time)}")
+    dual_rev = graph.create_dual()
+    dual_rev.convert_to_csv(csv_dual_paths)
 
-#Application of mst
-start_time = time.time()
+    print(f"Dual graph Creation in seconds: {(time.time() - start_time)}")
 
-dual_mst, dual_mst_comp = kruskal_mst(dual_rev)
-dual_mst.convert_to_csv(csv_mst_dual_paths)
-dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
+    #Gradient field creation
+    start_time = time.time()
 
-print(f"MST in seconds: {(time.time() - start_time)}")
+    gradient_field_builder(dual_rev, vector_paths)
 
-### Generate vtu file
-csv_to_vtp.build_vector_glyph(vector_paths)
-csv_to_vtp.build_graph_mesh(csv_reord_path)
-csv_to_vtp.build_graph_mesh(csv_dual_paths)
-csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
-csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
+    print(f"GVF in seconds: {(time.time() - start_time)}")
+
+    #Application of mst
+    start_time = time.time()
+
+    dual_mst, dual_mst_comp = kruskal_mst(dual_rev)
+    dual_mst.convert_to_csv(csv_mst_dual_paths)
+    dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
+
+    print(f"MST in seconds: {(time.time() - start_time)}")
+
+    ### Generate vtu file
+    csv_to_vtp.build_vector_glyph(vector_paths)
+    csv_to_vtp.build_graph_mesh(csv_reord_path)
+    csv_to_vtp.build_graph_mesh(csv_dual_paths)
+    csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
+    csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
+    """
+
+    ### Test
+
+    graph = Graph(2)
+    graph = parse_csv(graph, csv_paths)
+    csv_to_vtp.build_graph_mesh(csv_paths)
+
+    graph = set_minimas(graph, args.minimas)
+    graph = reord_algorithm(graph, video=False)
+    graph.convert_to_csv(csv_reord_path)
+    csv_to_vtp.build_graph_mesh(csv_reord_path)
+
+if __name__ == "__main__":
+    main()
