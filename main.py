@@ -82,9 +82,9 @@ csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
 
 graph = Graph(2)
 graph = parse_csv(graph, csv_paths)
-csv_to_vtp.main(csv_paths)
+csv_to_vtp.build_graph_mesh(csv_paths)
 graph = set_minimas(graph)
-graph = reord_algorithm(graph,video=True)
+graph = reord_algorithm(graph,video=False)
 
 graph.convert_to_csv(csv_reord_path)
-csv_to_vtp.main(csv_reord_path)
+csv_to_vtp.build_graph_mesh(csv_reord_path)
