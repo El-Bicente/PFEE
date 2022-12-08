@@ -3,6 +3,7 @@ from format import csv_to_vtp
 from reord.graph_structure import Graph
 from reord.reord import parse_csv, set_minimas, reord_algorithm
 from reord.mst_algo import kruskal_mst
+from gradient_field.gradient_field import gradient_field_builder
 import math
 
 def wave_function(x, y):
@@ -43,25 +44,37 @@ csv_comp_dual_paths = {
     "output": "format/generated_vtp/output_dual_graph_comp.vtu"
 }
 
-### Revaluation
+vector_paths = {
+    "vectors" : "function_to_csv/generated_csv/vectors.csv",
+    "vectors_dir" : "function_to_csv/generated_csv/vectors_dir.csv",
+    "output": "format/generated_vtp/output_gvf.vtp"
+}
+
+### Graph creation
 graph = Graph(2)
 graph = parse_csv(graph, csv_paths)
-csv_to_vtp.main(csv_paths)
+csv_to_vtp.build_graph_mesh(csv_paths)
+
+### Revaluation
 graph = set_minimas(graph)
 graph = reord_algorithm(graph)
 graph.convert_to_csv(csv_reord_path)
 
-#Graph before revaluation
-dual_non_rev = graph.create_dual()
-dual_non_rev.convert_to_csv(csv_dual_paths)
+#Graph after revaluation
+dual_rev = graph.create_dual()
+dual_rev.convert_to_csv(csv_dual_paths)
+
+#Gradient field creation
+gradient_field_builder(dual_rev, vector_paths)
 
 #Application of mst
-dual_mst, dual_mst_comp = kruskal_mst(dual_non_rev)
+dual_mst, dual_mst_comp = kruskal_mst(dual_rev)
 dual_mst.convert_to_csv(csv_mst_dual_paths)
 dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
 
 ### Generate vtu file
-csv_to_vtp.main(csv_reord_path)
-csv_to_vtp.main(csv_dual_paths)
-csv_to_vtp.main(csv_mst_dual_paths)
-csv_to_vtp.main(csv_comp_dual_paths)
+csv_to_vtp.build_vector_glyph(vector_paths)
+csv_to_vtp.build_graph_mesh(csv_reord_path)
+csv_to_vtp.build_graph_mesh(csv_dual_paths)
+csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
+csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)

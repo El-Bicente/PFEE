@@ -40,16 +40,6 @@ class Simplex:
         self.weight = weight
         self.ID = ID
 
-    def get_centroid(self):
-        if (self.order == 2):
-            c_x = (self.coords[0].x + self.coords[1].x + self.coords[2].x) / 3
-            c_y = (self.coords[0].y + self.coords[1].y + self.coords[2].y) / 3
-            c_z = (self.coords[0].z + self.coords[1].z + self.coords[2].z) / 3
-
-            return Coordinates((c_x, c_y, c_z))
-        return -1
-
-
     def to_string(self):
         strs = [elm.to_string() for elm in self.coords]
         return "[" + ", ".join(strs) + "]"

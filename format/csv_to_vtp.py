@@ -139,29 +139,43 @@ def build_mesh(faces, points, lines, tetras, output_file='format/generated_vtp/o
 
     writer.Write()
 
-def build_glyph(vectors_pts, vectors_dir):
-    vtk_ungrid_glyph = vtk.vtkUnstructuredGrid()
+def build_glyph(vectors_pts, vectors_dir, output_file='format/generated_vtp/output_gvf.vtu'):
+    vtk_ungrid_glyph = vtk.vtkPolyData()
     vtk_vec_pts = vtk.vtkPoints()
+
+    print(vectors_pts[vectors_pts.index == 107])
+    print(vectors_dir[vectors_dir.index == 107])
+    print(vectors_pts.shape)
+    print(vectors_dir.shape)
 
     init_points(vtk_vec_pts, vectors_pts)
     vtk_ungrid_glyph.SetPoints(vtk_vec_pts)
+    print(vtk_vec_pts.GetNumberOfPoints())
 
     build_vectors(vtk_ungrid_glyph, vectors_dir)
     arrow_source = vtk.vtkArrowSource()
 
+    print(vtk_ungrid_glyph.GetNumberOfCells())
+
     add_arrows = vtk.vtkGlyph3D()
-    add_arrows.SetInputData(vtk_ungrid_glyph)
     add_arrows.SetSourceConnection(arrow_source.GetOutputPort())
+    add_arrows.SetVectorModeToUseNormal()
+    add_arrows.SetInputData(vtk_ungrid_glyph)
     add_arrows.Update()
 
-    writer = vtk.vtkXMLUnstructuredGridWriter()
+    writer = vtk.vtkXMLPolyDataWriter()
     writer.SetInputConnection(add_arrows.GetOutputPort())
-    writer.SetFileName('format/vtp_vtu_files/vectors.vtu')
+    writer.SetFileName(output_file)
     writer.SetInputData(vtk_ungrid_glyph)
 
     writer.Write()
 
-def main(paths):
+
+
+def build_graph_mesh(paths):
+    if ("points" not in paths or "lines" not in paths):
+        return
+
     points = pd.read_csv(paths["points"])
     lines = pd.read_csv(paths["lines"])
 
@@ -175,19 +189,10 @@ def main(paths):
 
     build_mesh(faces, points, lines, tetras, paths["output"])
 
-    if "vectors" in paths and "vectors_dir" in paths:
-        vectors_pts = pd.read_csv(paths["vectors"])
-        vectors_dir = pd.read_csv(paths["vectors_dir"])
+def build_vector_glyph(paths):
+    if "vectors" not in paths or "vectors_dir" not in paths:
+        return
+    vectors_pts = pd.read_csv(paths["vectors"])
+    vectors_dir = pd.read_csv(paths["vectors_dir"])
 
-        build_glyph(vectors_pts, vectors_dir)
-
-if __name__ == "__main__":
-    paths = {
-        "points" : "csv_files/graph_points.csv",
-        "lines" : "csv_files/graph_lines.csv",
-        "triangles" : "csv_files/graph_triangles.csv",
-        "tetras" : "csv_files/tetra.csv",
-        "vectors" : "csv_files/vectors.csv",
-        "vectors_dir" : "csv_files/vectors_dir.csv"
-    }
-    main(paths)
+    build_glyph(vectors_pts, vectors_dir, paths["output"])
