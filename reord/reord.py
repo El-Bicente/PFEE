@@ -3,6 +3,8 @@ from reord.graph_structure import Graph, Coordinates, Simplex
 from operator import itemgetter
 from copy import deepcopy
 import pandas as pd
+import os
+from format import csv_to_vtp
 
 def get_minimas(F):
     minimas = set()
@@ -31,8 +33,28 @@ def get_face_neighbors(graph, faceId):
                     neighbors.append(face.ID)
     return neighbors
 
+# Set all weights to 0 for video purpose
+def set_to_black(graph):
+    for simplex in graph.simplexes_id:
+        if simplex.weight == 0:
+            simplex.weight = 1000
+        else:
+            simplex.weight = 0
+    return graph
+
+def generate_video_vtp(graph, cpt):
+    csv_video_path = {
+            "points" : "reord/generate_video/reord_points.csv",
+            "lines" : "reord/generate_video/reord_lines.csv",
+            "triangles" : "reord/generate_video/reord_triangles.csv",
+            "output": f"reord/generate_video/file{cpt}.vtu"
+        }
+    
+    graph.convert_to_csv(csv_video_path)
+    csv_to_vtp.main(csv_video_path)
+
 # Transform a given valued complex F into a 2-1 simplicial stack F_prime
-def reord_algorithm(F):
+def reord_algorithm(F, video = False):
     # Initialization
     F_prime = deepcopy(F)
     deja_vu = get_minimas(F)
@@ -48,10 +70,16 @@ def reord_algorithm(F):
 
     # Propagation until the queue is empty
     cpt = 1
+
+    if video:
+        dir = 'reord/generate_video'
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+        F_prime = set_to_black(F_prime)
+    
     while queue:
         count, a, b = max(queue,key=itemgetter(0))
         queue.remove((count, a, b))
-
         # We treat ab when adding it to G_past does not create a cycle or connect
         # two different minima
         if a not in deja_vu or b not in deja_vu:
@@ -62,12 +90,18 @@ def reord_algorithm(F):
             # G_past = G_past U {a,b}
             G_past.add(dual(a, b, F))
 
-            v = cpt
+            if video:
+                v = 1000
+            else:
+                v = cpt
             cpt += 1
 
             # F_prime(Dual(ab)) = v
             F_prime.simplexes_id[dual(a, b, F_prime)].weight = v
             F_prime.simplexes_id[b].weight = v
+
+            if video:
+                generate_video_vtp(F_prime, cpt)
 
             # We look for the new edges to push
             for c in get_face_neighbors(F, b):
@@ -80,11 +114,20 @@ def reord_algorithm(F):
         if edge.ID not in G_past:
             # Adding the edge not to make the operation twice
             G_past.add(edge.ID)
-            F_prime.simplexes_id[edge.ID].weight = cpt
+
+            if video:
+                F_prime.simplexes_id[edge.ID].weight = 1000
+                #generate_video_vtp(F_prime, cpt)
+            else:
+                F_prime.simplexes_id[edge.ID].weight = cpt
             cpt += 1
 
     for i in range(len(F_prime.simplexes[0])):
-        F_prime.simplexes[0][i].weight = cpt
+        if video:
+                F_prime.simplexes[0][i].weight = 1000
+                #generate_video_vtp(F_prime, cpt)
+        else:
+            F_prime.simplexes[0][i].weight = cpt
         cpt += 1
 
     return F_prime
@@ -110,29 +153,26 @@ def parse_csv(graph, paths):
 
     return graph
 
-def find_minimas(graph, id, visited):
-    if id not in visited:
-        neighbors = get_face_neighbors(graph, id)
-
-        if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[id].weight for neighbor in neighbors):
-            graph.simplexes_id[id].weight = 0
-        visited.add(id)
-
-        for neighbor in neighbors:
-            find_minimas(graph, neighbor, visited)
+def find_minimas(graph):
+    for face in graph.simplexes[2]:
+        faceId = face.ID
+        neighbors = get_face_neighbors(graph, faceId)
+        if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight > graph.simplexes_id[faceId].weight for neighbor in neighbors):
+            graph.simplexes_id[faceId].weight = 0
+    
 
 
-
+# finding vertices on the border
 def set_border_as_minimas(graph):
     visited = set()
-    for i in range(len(graph.simplexes[1])):
-        edgeId = graph.simplexes[1][i].ID
-        if len(graph.adj[edgeId]) <= 3:
-            for neighborId in graph.adj[edgeId]:
+    for i in range(len(graph.simplexes[0])):
+        vertexId = graph.simplexes[0][i].ID
+        if len(graph.adj[vertexId]) <= 9:
+            for neighborId in graph.adj[vertexId]:
                 if graph.simplexes_id[neighborId].order == 2:
                     graph.simplexes_id[neighborId].weight = 0
                     visited.add(neighborId)
-                    break
+
     return visited
 
 def set_minimas(graph):
@@ -140,6 +180,6 @@ def set_minimas(graph):
         simplex.weight += 100
 
     set_border_as_minimas(graph)
-    find_minimas(graph, graph.simplexes[2][0].ID, set())
+    find_minimas(graph)
 
     return graph

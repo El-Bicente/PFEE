@@ -140,25 +140,26 @@ class Graph:
 
 
         for smp_orders in self.simplexes:
-            for smp in smp_orders:
-                #ADD 0_faces:
-                if (simplex.order == 0) and (smp.ID != simplex.ID) and (smp.order == 1 or smp.order == 2) and simplex.coords[0] in smp.coords:
-                    self.adj[simplex.ID].append(smp.ID)
-                    self.adj[smp.ID].append(simplex.ID)
-
-                #ADD 1_faces:
-                if (simplex.order == 1) and (smp.ID != simplex.ID) and (
-                        (smp.order == 2 and (simplex.coords[0] in smp.coords and simplex.coords[1] in smp.coords))
-                    or  (smp.order == 0 and (simplex.coords[0] in smp.coords or simplex.coords[1] in smp.coords))):
-                    self.adj[simplex.ID].append(smp.ID)
-                    self.adj[smp.ID].append(simplex.ID)
-
-                #ADD 2_faces:
-                if (simplex.order == 2) and (smp.ID != simplex.ID):
-                    if  ((smp.order == 0 and (smp.coords[0] in simplex.coords))
-                        or  (smp.order == 1 and (smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords))):
+            if smp_orders != simplex.order:
+                for smp in smp_orders:
+                    #ADD 0_faces:
+                    if (simplex.order == 0) and (smp.order == 1 or smp.order == 2) and simplex.coords[0] in smp.coords:
                         self.adj[simplex.ID].append(smp.ID)
                         self.adj[smp.ID].append(simplex.ID)
+
+                    #ADD 1_faces:
+                    elif (simplex.order == 1) and (
+                            (smp.order == 2 and (simplex.coords[0] in smp.coords and simplex.coords[1] in smp.coords))
+                        or  (smp.order == 0 and (simplex.coords[0] in smp.coords or simplex.coords[1] in smp.coords))):
+                        self.adj[simplex.ID].append(smp.ID)
+                        self.adj[smp.ID].append(simplex.ID)
+
+                    #ADD 2_faces:
+                    elif (simplex.order == 2):
+                        if  ((smp.order == 0 and (smp.coords[0] in simplex.coords))
+                            or  (smp.order == 1 and (smp.coords[0] in simplex.coords and smp.coords[1] in simplex.coords))):
+                            self.adj[simplex.ID].append(smp.ID)
+                            self.adj[smp.ID].append(simplex.ID)
 
         return simplex.ID
 
