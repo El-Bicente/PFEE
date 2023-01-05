@@ -3,7 +3,7 @@ from format import csv_to_vtp
 from reord.graph_structure import Graph
 from reord.reord import parse_csv, set_minimas, reord_algorithm
 from reord.mst_algo import kruskal_mst
-from gradient_field.gradient_field import gradient_field_builder
+from gradient_field.gradient_field import gradient_field_builder, watershed_gvf
 import argparse
 import math
 import time
@@ -32,6 +32,13 @@ csv_mst_dual_paths = {
     "points" : "function_to_csv/generated_csv/points_dual_mst.csv",
     "lines" : "function_to_csv/generated_csv/lines_dual_mst.csv",
     "output": "format/generated_vtp/output_dual_graph_mst.vtu"
+}
+
+ws_gvf_dual_paths = {
+    "points" : "function_to_csv/generated_csv/points_gvf_dual_ws.csv",
+    "lines" : "function_to_csv/generated_csv/lines_gvf_dual_ws.csv",
+    "triangles" : "function_to_csv/generated_csv/triangles_gvf_dual_ws.csv",
+    "output": "format/generated_vtp/output_gvf_dual_ws.vtu"
 }
 
 csv_comp_dual_paths = {
@@ -70,9 +77,9 @@ def get_parser() -> argparse.ArgumentParser:
 def main():
 
     parser = get_parser()
-    args = parser.parse_args()  
+    args = parser.parse_args()
 
-    function_to_csv.main(step=1, size=18, function=wave_function)
+    function_to_csv.main(step=1, size=9, function=wave_function)
 
     ### Graph creation
     start_time = time.time()
@@ -103,7 +110,9 @@ def main():
     #Gradient field creation
     start_time = time.time()
 
-    gradient_field_builder(dual_rev, vector_paths)
+    seen_edges_pts = gradient_field_builder(dual_rev, vector_paths)
+    ws_gvf_graph = watershed_gvf(graph, seen_edges_pts)
+    ws_gvf_graph.convert_to_csv(ws_gvf_dual_paths)
 
     print(f"GVF in seconds: {(time.time() - start_time)}")
 
@@ -121,6 +130,7 @@ def main():
     csv_to_vtp.build_graph_mesh(csv_reord_path)
     csv_to_vtp.build_graph_mesh(csv_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
+    csv_to_vtp.build_graph_mesh(ws_gvf_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
 
     """

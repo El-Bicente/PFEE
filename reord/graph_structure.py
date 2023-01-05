@@ -59,9 +59,9 @@ class Simplex:
         return centroid
 
 def create_csv(df, columns, filename):
-    res = pd.DataFrame(df)
-    res.columns = columns
+    res = pd.DataFrame(df, columns = columns)
     res.to_csv(filename, index=False)
+
 
 class Graph:
     def __init__(self, order):

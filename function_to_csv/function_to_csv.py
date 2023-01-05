@@ -8,11 +8,11 @@ import numpy as np
 def build_points(f, step, size):
     spacing = step
     spacing_height = math.sqrt(step**2-(step/2)**2)
-    point_ids = np.zeros((size * 2,size * 2)).astype("int")
+    point_ids = np.zeros((size * 2 + 1,size * 2 + 1)).astype("int")
     id_cpt = 0
     csv = []
-    for xi in range(-size, size):
-        for yi in range(-size, size):
+    for xi in range(-size, size + 1):
+        for yi in range(-size, size + 1):
             x = xi * spacing + (yi%2 * (spacing / 2))
             y = yi * spacing_height
             point_ids[yi + size, xi + size] = id_cpt
