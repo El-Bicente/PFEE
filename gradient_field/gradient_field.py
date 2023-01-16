@@ -28,37 +28,39 @@ def watershed_gvf(primal: Graph, seen_edges_pts):
     seen_edges.add(smp_id)
 """
 
-def gradient_field_builder(graph: Graph, paths):
+def gradient_field_builder(dual_graph: Graph, paths):
     csv_vector_file = ",X,Y,Z\n"
     csv_vector_dir_file = ",X,Y,Z\n"
     vector_id = 0
     seen_edges_pts = set([])
 
-    for pos, smp in enumerate(graph.simplexes_id):
-        if (smp.order != 0):
+    for pos, smp in enumerate(dual_graph.simplexes_id):
+        if (smp.order != 1):
             continue
-        for adj_smp_id in graph.adj[pos]:
-            adj_smp = graph.simplexes_id[adj_smp_id]
-            if smp.weight == adj_smp.weight:
-                smp_centroid = smp.coords[0]
-                adj_spm_centroid = adj_smp.get_centroid()
+        
+        p1 = dual_graph.simplexes_id[dual_graph.adj[pos][0]]
+        p2 = dual_graph.simplexes_id[dual_graph.adj[pos][1]]
 
-                csv_vector_file += f"{vector_id}, {smp_centroid.x}, {smp_centroid.y}, {smp_centroid.z}\n"
-                csv_vector_dir_file += f"{vector_id}, {adj_spm_centroid.x - smp_centroid.x}, {adj_spm_centroid.y - smp_centroid.y}, {adj_spm_centroid.z - smp_centroid.z}\n"
-                vector_id += 1
+        start_point, end_point = None, None
 
-                start_pt, end_pt = graph.adj[adj_smp_id]
-                start_pt, end_pt = graph.simplexes_id[start_pt], graph.simplexes_id[end_pt]
-
-                if (start_pt.weight != end_pt.weight):
-                    seen_edges_pts.add(adj_spm_centroid)
-                    seen_edges_pts.add(start_pt.coords[0])
-                    seen_edges_pts.add(end_pt.coords[0])
+        if p1.weight == smp.weight:
+            start_point, end_point = p2.coords[0], p1.coords[0]
+        
+        elif p2.weight == smp.weight:
+            start_point, end_point = p1.coords[0], p2.coords[0]
+        
+        if start_point:
+            csv_vector_file += f"{vector_id}, {start_point.x}, {start_point.y}, {start_point.z}\n"
+            csv_vector_dir_file += f"{vector_id}, {end_point.x - start_point.x}, {end_point.y - start_point.y}, {end_point.z - start_point.z}\n"
+            seen_edges_pts.add(start_point)
+            seen_edges_pts.add(end_point)
+            seen_edges_pts.add(smp.get_centroid())
+            vector_id += 1
 
     with open(paths["vectors"], "w") as vectors_file:
         vectors_file.write(csv_vector_file)
 
     with open(paths["vectors_dir"], "w") as vectors_dir_file:
         vectors_dir_file.write(csv_vector_dir_file)
-
+    
     return seen_edges_pts
