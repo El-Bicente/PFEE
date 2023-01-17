@@ -96,6 +96,7 @@ def main():
 
     graph = set_minimas(graph, mode=args.minimas, map=True)
     graph = reord_algorithm(graph, video=False)
+    print(graph.get_map())
     graph.convert_to_csv(csv_reord_path)
 
     print(f"Revaluation in seconds: {(time.time() - start_time)}")

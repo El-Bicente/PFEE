@@ -171,3 +171,12 @@ class Graph:
     def to_string(self):
         strs = [elm.to_string() for elm in self.simplexes]
         return "\n".join(strs)
+    
+    def get_map(self):
+        map_faces = dict()
+        for simp in self.simplexes_id:
+            if map_faces.get(simp.weight):
+                map_faces[simp.weight].add(simp.ID)
+            else:
+                map_faces[simp.weight] = {simp.ID}
+        return map_faces
