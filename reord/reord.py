@@ -28,13 +28,13 @@ def get_diagonaly_neighbors(graph, faceId, neighbors):
         otherFace = graph.simplexes_id[faceNeighborsId]
         if otherFace.order == 0:
             points.append(otherFace.ID)
-    
-    for pointId in points:   
+
+    for pointId in points:
         for pointNeighborsId in graph.adj[pointId]:
             otherFace = graph.simplexes_id[pointNeighborsId]
             if otherFace.order == 2 and otherFace.ID not in neighbors and otherFace.ID != faceId:
                 neighbors.append(otherFace.ID)
-    
+
     return neighbors
 
 def get_face_neighbors(graph, faceId, mode):
@@ -80,9 +80,23 @@ def generate_video_vtp(graph, cpt):
             "triangles" : "reord/generate_video/reord_triangles.csv",
             "output": f"reord/generate_video/file{cpt}.vtu"
         }
-    
+
     graph.convert_to_csv(csv_video_path)
     csv_to_vtp.main(csv_video_path)
+
+"""
+def supress_tuple_list(l, e, verif):
+    res = 0
+    for i, elm in enumerate(l):
+        in_it = True
+        for j, to_verif in enumerate(verif):
+            if to_verif and e[j] != elm[j]:
+                in_it = False
+        if in_it:
+            res += 1
+            l.pop(i)
+    return res
+"""
 
 # Transform a given valued complex F into a 2-1 simplicial stack F_prime
 def reord_algorithm(F, video = False):
@@ -99,6 +113,7 @@ def reord_algorithm(F, video = False):
                 if cost >= 0:
                     queue.append((cost, m, h))
 
+    print(queue)
     # Propagation until the queue is empty
     cpt = 1
 
@@ -107,13 +122,15 @@ def reord_algorithm(F, video = False):
         for f in os.listdir(dir):
             os.remove(os.path.join(dir, f))
         F_prime = set_to_black(F_prime)
-    
+
     while queue:
         cost, a, b = max(queue,key=itemgetter(0))
         queue.remove((cost, a, b))
+
         # We treat ab when adding it to G_past does not create a cycle or connect
         # two different minima
         if b not in deja_vu:
+            print((F_prime.simplexes_id[a].weight, F_prime.simplexes_id[b].weight))
             deja_vu.add(b)
 
             # G_past = G_past U {a,b}
@@ -134,10 +151,11 @@ def reord_algorithm(F, video = False):
 
             # We look for the new edges to push
             for c in get_face_neighbors_reval(F, b):
-                if c not in deja_vu:
-                    cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
-                    if cost >= 0:
-                        queue.append((cost, b, c))
+                cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
+                if cost >= 0:
+                    print("second:", (F.simplexes_id[b].weight, F.simplexes_id[c].weight))
+                    queue = list(filter(lambda x: x[2] != c, queue))
+                    queue.append((cost, b, c))
 
     # Valuation of the remaining simplices to ensure we obtain a stack
     for edge in F.simplexes[1]:
@@ -191,11 +209,11 @@ def find_minimas(graph, mode):
         if mode % 2 == 0:
             if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight > graph.simplexes_id[faceId].weight for neighbor in neighbors):
                 graph.simplexes_id[faceId].weight = 0
-        
+
         if mode % 2 == 1:
             if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[faceId].weight for neighbor in neighbors):
                 graph.simplexes_id[faceId].weight = 0
-    
+
 
 
 # finding vertices on the border
@@ -219,8 +237,10 @@ map_minima_path = {
         }
 
 def set_minimas(graph, mode, map=False):
+    """
     for simplex in graph.simplexes_id:
         simplex.weight += 100
+    """
 
     set_border_as_minimas(graph)
     find_minimas(graph, mode)
