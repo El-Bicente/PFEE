@@ -1,4 +1,48 @@
 from reord.graph_structure import Graph, Coordinates
+import networkx as nx
+
+def graph_to_tup(G, is_weight = False):
+    res = []
+    for edge in G.simplexes[1]:
+        neighboors = [G.simplexes_id[point_id] for point_id in G.adj[edge.ID]]
+        u = neighboors[0]
+        v = neighboors[1]
+        if is_weight:
+            res.append((u.ID, v.ID, edge.weight))
+        else:
+            res.append((u.ID, v.ID))
+    return res
+
+def networkx_mst(G):
+    Gnet = nx.Graph()
+    for edge in G.simplexes[1]:
+        neighboors = [G.simplexes_id[point_id] for point_id in G.adj[edge.ID]]
+        u = neighboors[0]
+        v = neighboors[1]
+        w = edge.weight
+        Gnet.add_edge(u.ID, v.ID, weight = w)
+    mst_net = nx.minimum_spanning_tree(Gnet)
+
+    result = Graph(G.order)
+    comp = Graph(G.order)
+    for u, v in Gnet.edges:
+        node1 = G.simplexes_id[u]
+        node2 = G.simplexes_id[v]
+
+        if ((u, v) in mst_net.edges):
+            result.add_simplex([node1.coords[0].copy()], node1.weight)
+            result.add_simplex([node2.coords[0].copy()], node2.weight)
+            result.add_simplex([node1.coords[0].copy(),
+                                node2.coords[0].copy()], weight = Gnet[u][v]["weight"])
+        else:
+            comp.add_simplex([node1.coords[0].copy()], node1.weight)
+            comp.add_simplex([node2.coords[0].copy()], node2.weight)
+            comp.add_simplex([node1.coords[0].copy(),
+                                node2.coords[0].copy()], weight = Gnet[u][v]["weight"])
+
+    return result, comp
+
+
 
 def kruskal_mst(G):
     result = Graph(G.order)
@@ -34,4 +78,5 @@ def kruskal_mst(G):
             comp.add_simplex([u.coords[0].copy()], u.weight)
             comp.add_simplex([v.coords[0].copy()], v.weight)
             comp.add_simplex([u.coords[0].copy(), v.coords[0].copy()], weight = w)
+
     return result, comp

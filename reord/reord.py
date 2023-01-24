@@ -237,10 +237,10 @@ map_minima_path = {
         }
 
 def set_minimas(graph, mode, map=False):
-    """
+
     for simplex in graph.simplexes_id:
         simplex.weight += 100
-    """
+
 
     set_border_as_minimas(graph)
     find_minimas(graph, mode)

@@ -2,7 +2,7 @@ from function_to_csv import function_to_csv
 from format import csv_to_vtp
 from reord.graph_structure import Graph
 from reord.reord import parse_csv, set_minimas, reord_algorithm
-from reord.mst_algo import kruskal_mst
+from reord.mst_algo import kruskal_mst, networkx_mst
 from gradient_field.gradient_field import gradient_field_builder, watershed_gvf
 import argparse
 import math
@@ -76,11 +76,11 @@ def get_parser() -> argparse.ArgumentParser:
 
 def main():
 
-    """
+
     parser = get_parser()
     args = parser.parse_args()
 
-    function_to_csv.main(step=1, size=3, function=wave_function)
+    function_to_csv.main(step=1, size=9, function=wave_function)
 
     ### Graph creation
     start_time = time.time()
@@ -96,7 +96,6 @@ def main():
 
     graph = set_minimas(graph, mode=args.minimas, map=True)
     graph = reord_algorithm(graph, video=False)
-    print(graph.get_map())
     graph.convert_to_csv(csv_reord_path)
 
     print(f"Revaluation in seconds: {(time.time() - start_time)}")
@@ -121,7 +120,7 @@ def main():
     #Application of mst
     start_time = time.time()
 
-    dual_mst, dual_mst_comp = kruskal_mst(dual_rev)
+    dual_mst, dual_mst_comp = kruskal_mst(dual_rev) #kruskal_mst
     dual_mst.convert_to_csv(csv_mst_dual_paths)
     dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
 
@@ -135,11 +134,11 @@ def main():
     csv_to_vtp.build_graph_mesh(ws_gvf_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
 
-    """
+
 
     ### Test custom csv
+    """
 
-    
     parser = get_parser()
     args = parser.parse_args()
 
@@ -181,7 +180,7 @@ def main():
     #Application of mst
     start_time = time.time()
 
-    dual_mst, dual_mst_comp = kruskal_mst(dual_rev)
+    dual_mst, dual_mst_comp = networkx_mst(dual_rev) #kruskal_mst
     dual_mst.convert_to_csv(csv_mst_dual_paths)
     dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
 
@@ -194,6 +193,7 @@ def main():
     csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
     csv_to_vtp.build_graph_mesh(ws_gvf_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
+    """
 
 
 
