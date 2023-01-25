@@ -2,7 +2,7 @@ from function_to_csv import function_to_csv
 from format import csv_to_vtp
 from reord.graph_structure import Graph
 from reord.reord import parse_csv, set_minimas, reord_algorithm
-from reord.mst_algo import kruskal_mst, networkx_mst
+from reord.mst_algo import kruskal_mst, networkx_mst, watershed_msf
 from gradient_field.gradient_field import gradient_field_builder, watershed_gvf
 import argparse
 import math
@@ -39,6 +39,12 @@ ws_gvf_dual_paths = {
     "lines" : "function_to_csv/generated_csv/lines_gvf_dual_ws.csv",
     "triangles" : "function_to_csv/generated_csv/triangles_gvf_dual_ws.csv",
     "output": "format/generated_vtp/output_gvf_dual_ws.vtu"
+}
+
+ws_msf_dual_paths = {
+    "points" : "function_to_csv/generated_csv/points_msf_dual_ws.csv",
+    "lines" : "function_to_csv/generated_csv/lines_msf_dual_ws.csv",
+    "output": "format/generated_vtp/output_msf_dual_ws.vtu"
 }
 
 csv_comp_dual_paths = {
@@ -82,7 +88,7 @@ def main():
 
     function_to_csv.main(step=1, size=9, function=wave_function)
 
-    ### Graph creation
+    # Graph creation
     start_time = time.time()
 
     graph = Graph(2)
@@ -91,7 +97,7 @@ def main():
 
     print(f"Graph Creation in seconds: {(time.time() - start_time)}")
 
-    ### Revaluation
+    # Revaluation
     start_time = time.time()
 
     graph = set_minimas(graph, mode=args.minimas, map=True)
@@ -100,7 +106,7 @@ def main():
 
     print(f"Revaluation in seconds: {(time.time() - start_time)}")
 
-    #Graph after revaluation
+    # Graph after revaluation
     start_time = time.time()
 
     dual_rev = graph.create_dual()
@@ -108,7 +114,7 @@ def main():
 
     print(f"Dual graph Creation in seconds: {(time.time() - start_time)}")
 
-    #Gradient field creation
+    # Gradient field creation
     start_time = time.time()
 
     seen_edges_pts = gradient_field_builder(dual_rev, vector_paths)
@@ -117,85 +123,28 @@ def main():
 
     print(f"GVF in seconds: {(time.time() - start_time)}")
 
-    #Application of mst
+    # Application of MST
     start_time = time.time()
 
-    dual_mst, dual_mst_comp = networkx_mst(dual_rev, dual_minima) #kruskal_mst
+    # Prim's MST Algorithm
+    dual_mst, dual_mst_comp = networkx_mst(dual_rev, dual_minima)
     dual_mst.convert_to_csv(csv_mst_dual_paths)
     dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
 
+    # Watershed
+    watershed = watershed_msf(graph, dual_mst_comp)
+    watershed.convert_to_csv(ws_msf_dual_paths)
+
     print(f"MST in seconds: {(time.time() - start_time)}")
 
-    ### Generate vtu file
+    # Generate vtu file
     csv_to_vtp.build_vector_glyph(vector_paths)
     csv_to_vtp.build_graph_mesh(csv_reord_path)
     csv_to_vtp.build_graph_mesh(csv_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
     csv_to_vtp.build_graph_mesh(ws_gvf_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
-
-
-
-    ### Test custom csv
-    """
-
-    parser = get_parser()
-    args = parser.parse_args()
-
-    ### Graph creation
-    start_time = time.time()
-
-    graph = Graph(2)
-    graph = parse_csv(graph, csv_paths)
-    csv_to_vtp.build_graph_mesh(csv_paths)
-
-    print(f"Graph Creation in seconds: {(time.time() - start_time)}")
-
-    ### Revaluation
-    start_time = time.time()
-
-    graph = set_minimas(graph, mode=args.minimas, map=True)
-    graph = reord_algorithm(graph, video=False)
-    graph.convert_to_csv(csv_reord_path)
-
-    print(f"Revaluation in seconds: {(time.time() - start_time)}")
-
-    #Graph after revaluation
-    start_time = time.time()
-
-    dual_rev = graph.create_dual()
-    dual_rev.convert_to_csv(csv_dual_paths)
-
-    print(f"Dual graph Creation in seconds: {(time.time() - start_time)}")
-
-    #Gradient field creation
-    start_time = time.time()
-
-    seen_edges_pts = gradient_field_builder(dual_rev, vector_paths)
-    ws_gvf_graph = watershed_gvf(graph, seen_edges_pts)
-    ws_gvf_graph.convert_to_csv(ws_gvf_dual_paths)
-
-    print(f"GVF in seconds: {(time.time() - start_time)}")
-
-    #Application of mst
-    start_time = time.time()
-
-    dual_mst, dual_mst_comp = networkx_mst(dual_rev) #kruskal_mst
-    dual_mst.convert_to_csv(csv_mst_dual_paths)
-    dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
-
-    print(f"MST in seconds: {(time.time() - start_time)}")
-
-    ### Generate vtu file
-    csv_to_vtp.build_vector_glyph(vector_paths)
-    csv_to_vtp.build_graph_mesh(csv_reord_path)
-    csv_to_vtp.build_graph_mesh(csv_dual_paths)
-    csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
-    csv_to_vtp.build_graph_mesh(ws_gvf_dual_paths)
-    csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
-    """
-
-
+    csv_to_vtp.build_graph_mesh(ws_msf_dual_paths)
 
 if __name__ == "__main__":
     main()

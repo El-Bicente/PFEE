@@ -14,20 +14,6 @@ def watershed_gvf(primal: Graph, seen_edges_pts):
 
     return ws_graph
 
-"""for pos, smp in enumerate(graph.simplexes_id):
-    if (smp.order != 1):
-        continue
-
-    smp_id = smp.ID
-    if  smp_id not in seen_edges:
-        start_pt, end_pt = graph.adj[smp_id]
-        start_pt, end_pt = graph.simplexes_id[start_pt], graph.simplexes_id[end_pt]
-        ws_graph.add_simplex([start_pt.coords[0].copy()], start_pt.weight)
-        ws_graph.add_simplex([end_pt.coords[0].copy()], end_pt.weight)
-        ws_graph.add_simplex([start_pt.coords[0].copy(), end_pt.coords[0].copy()], weight = smp.weight)
-    seen_edges.add(smp_id)
-"""
-
 def gradient_field_builder(dual_graph: Graph, paths):
     csv_vector_file = ",X,Y,Z\n"
     csv_vector_dir_file = ",X,Y,Z\n"
