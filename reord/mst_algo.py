@@ -98,6 +98,7 @@ def watershed_msf(primal: Graph, msf_cut: Graph):
     watershed = Graph(primal.order - 1)
     
     # Adding all simplexes included in the closure
+    # TODO Check if they are wrong matches of centroids
     for edge_primal in primal.simplexes[primal.order - 1]:
         if edge_primal.get_centroid() not in edges_centroid:
             continue
