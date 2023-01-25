@@ -13,7 +13,7 @@ def graph_to_tup(G, is_weight = False):
             res.append((u.ID, v.ID))
     return res
 
-def networkx_mst(G):
+def networkx_mst(G, dual_minima):
     Gnet = nx.Graph()
     for edge in G.simplexes[1]:
         neighboors = [G.simplexes_id[point_id] for point_id in G.adj[edge.ID]]
@@ -21,11 +21,18 @@ def networkx_mst(G):
         v = neighboors[1]
         w = edge.weight
         Gnet.add_edge(u.ID, v.ID, weight = w)
-    mst_net = nx.minimum_spanning_tree(Gnet)
+    
+    inf_node_id = len(G.simplexes_id)
+    for m in dual_minima:
+        Gnet.add_edge(m, inf_node_id, weight = -1)
+
+    mst_net = nx.minimum_spanning_tree(Gnet, algorithm="prim")
 
     result = Graph(G.order)
     comp = Graph(G.order)
     for u, v in Gnet.edges:
+        if u == inf_node_id or v == inf_node_id:
+            continue
         node1 = G.simplexes_id[u]
         node2 = G.simplexes_id[v]
 

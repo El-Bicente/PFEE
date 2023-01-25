@@ -95,7 +95,7 @@ def main():
     start_time = time.time()
 
     graph = set_minimas(graph, mode=args.minimas, map=True)
-    graph = reord_algorithm(graph, video=False)
+    graph, dual_minima = reord_algorithm(graph, video=False)
     graph.convert_to_csv(csv_reord_path)
 
     print(f"Revaluation in seconds: {(time.time() - start_time)}")
@@ -120,7 +120,7 @@ def main():
     #Application of mst
     start_time = time.time()
 
-    dual_mst, dual_mst_comp = kruskal_mst(dual_rev) #kruskal_mst
+    dual_mst, dual_mst_comp = networkx_mst(dual_rev, dual_minima) #kruskal_mst
     dual_mst.convert_to_csv(csv_mst_dual_paths)
     dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
 

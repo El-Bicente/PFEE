@@ -64,6 +64,28 @@ def get_face_neighbors_reval(graph, faceId):
 
     return neighbors
 
+def get_vertex_neighbors_dual(graph, vertexId):
+    neighbors = []
+    for faceNeighborsId in graph.adj[vertexId]:
+        otherFace = graph.simplexes_id[faceNeighborsId]
+        if otherFace.order == 1:
+            for edgeNeighborsId in graph.adj[otherFace.ID]:
+                face = graph.simplexes_id[edgeNeighborsId]
+                if face.order == 0 and face.ID != vertexId:
+                    neighbors.append(face.ID)
+    return neighbors
+
+def get_dual_minima(graph):
+    dual = graph.create_dual()
+    minima = []
+    for face in dual.simplexes[0]:
+        faceId = face.ID
+        neighbors = get_vertex_neighbors_dual(dual, faceId)
+
+        if all(dual.simplexes_id[neighbor].weight >= dual.simplexes_id[faceId].weight for neighbor in neighbors):
+            minima.append(faceId)
+    return minima
+
 # Set all weights to 0 for video purpose
 def set_to_black(graph):
     for simplex in graph.simplexes_id:
@@ -106,6 +128,8 @@ def reord_algorithm(F, video = False):
     G_past = set()
     queue = []
 
+    dual_minima = get_dual_minima(F_prime)
+
     for m in deja_vu:
         for h in get_face_neighbors_reval(F, m):
             if h not in deja_vu:
@@ -113,7 +137,6 @@ def reord_algorithm(F, video = False):
                 if cost >= 0:
                     queue.append((cost, m, h))
 
-    print(queue)
     # Propagation until the queue is empty
     cpt = 1
 
@@ -130,7 +153,7 @@ def reord_algorithm(F, video = False):
         # We treat ab when adding it to G_past does not create a cycle or connect
         # two different minima
         if b not in deja_vu:
-            print((F_prime.simplexes_id[a].weight, F_prime.simplexes_id[b].weight))
+            #print((F_prime.simplexes_id[a].weight, F_prime.simplexes_id[b].weight))
             deja_vu.add(b)
 
             # G_past = G_past U {a,b}
@@ -153,7 +176,6 @@ def reord_algorithm(F, video = False):
             for c in get_face_neighbors_reval(F, b):
                 cost = F.simplexes_id[c].weight - F.simplexes_id[b].weight
                 if cost >= 0:
-                    print("second:", (F.simplexes_id[b].weight, F.simplexes_id[c].weight))
                     queue = list(filter(lambda x: x[2] != c, queue))
                     queue.append((cost, b, c))
 
@@ -178,7 +200,7 @@ def reord_algorithm(F, video = False):
             F_prime.simplexes[0][i].weight = cpt
         cpt += 1
 
-    return F_prime
+    return F_prime, dual_minima
 
 def parse_csv(graph, paths):
     if ("points" in paths):
