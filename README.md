@@ -10,29 +10,30 @@ IMAGE
 
 IMAGE
 
+The application generate CSV files containing coordinates from the given function.
+
 <details><summary><b>Show CSV Format</b></summary>
 
 Points
-```csvpreview
-Node Number,X,Y,Z,Weight
-int,float,float,float,int
-```
+
+| Node Number | X     | Y     | Z     | Weight |
+|-------------|-------|-------|-------|--------|
+| int         | float | float | float | int    |
+
 
 Lines
-```csvpreview
-P1,P2,Weight
-Node Number,Node Number,int
-```
+
+| P1          | P2          | Weight |
+|-------------|-------------|--------|
+| Node Number | Node Number | int    |
 
 Triangles
-```csvpreview
-S1,S2,S3,Weight
-Node Number, Node Number, Node Number,int
-```
-</details>
 
-* Python application which acts as a wrapper for the C++ app and will also show a sequence of all the images given as input and draw all the bounding boxes on them.
-* A benchmark highlighting respective speed and compute relevant indicators.
+| S1          | S2          | S3          | Weight |
+|-------------|-------------|-------------|--------|
+| Node Number | Node Number | Node Number | int    |
+
+</details>
 
 ## Installation
 
