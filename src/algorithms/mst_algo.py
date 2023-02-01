@@ -92,7 +92,7 @@ def kruskal_mst(G):
 def watershed_msf(primal: Graph, msf_cut: Graph):
     # Initialization of a set containing all centroids of the edges
     # They are used to find the corresponding primal edges
-    edges_centroid = set(edge.get_centroid() for edge in msf_cut.simplexes[1])
+    edges_centroid = [edge.get_centroid() for edge in msf_cut.simplexes[1]]
 
     # The watershed is the closure of all critical n-1 faces
     watershed = Graph(primal.order - 1)
@@ -102,7 +102,6 @@ def watershed_msf(primal: Graph, msf_cut: Graph):
     for edge_primal in primal.simplexes[primal.order - 1]:
         if edge_primal.get_centroid() not in edges_centroid:
             continue
-
         for neighbor_id in primal.adj[edge_primal.ID]:
             neighbor = primal.simplexes_id[neighbor_id]
             if neighbor.order >= (primal.order - 1):
@@ -112,5 +111,4 @@ def watershed_msf(primal: Graph, msf_cut: Graph):
 
         edge_closure = primal.simplexes_id[edge_primal.ID]
         watershed.add_simplex([edge_closure.coords[0].copy(), edge_closure.coords[1].copy()], edge_closure.weight)
-
     return watershed

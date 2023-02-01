@@ -18,7 +18,7 @@ def gradient_field_builder(dual_graph: Graph, paths):
     csv_vector_file = ",X,Y,Z\n"
     csv_vector_dir_file = ",X,Y,Z\n"
     vector_id = 0
-    seen_edges_pts = set([])
+    seen_edges_pts = []
 
     for pos, smp in enumerate(dual_graph.simplexes_id):
         if (smp.order != 1):
@@ -38,9 +38,9 @@ def gradient_field_builder(dual_graph: Graph, paths):
         if start_point:
             csv_vector_file += f"{vector_id}, {start_point.x}, {start_point.y}, {start_point.z}\n"
             csv_vector_dir_file += f"{vector_id}, {end_point.x - start_point.x}, {end_point.y - start_point.y}, {end_point.z - start_point.z}\n"
-            seen_edges_pts.add(start_point)
-            seen_edges_pts.add(end_point)
-            seen_edges_pts.add(smp.get_centroid())
+            seen_edges_pts.append(start_point)
+            seen_edges_pts.append(end_point)
+            seen_edges_pts.append(smp.get_centroid())
             vector_id += 1
 
     with open(paths["vectors"], "w") as vectors_file:

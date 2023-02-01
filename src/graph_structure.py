@@ -10,8 +10,13 @@ class Coordinates:
     def __hash__(self):
         return hash((self.x, self.y, self.z))
 
+    def calculate_equality(self, nb1, nb2):
+        return abs(nb1 - nb2) <= 0.000000001
+
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y and self.z == other.z
+        return  self.calculate_equality(self.x, other.x)     \
+                and self.calculate_equality(self.y, other.y) \
+                and self.calculate_equality(self.z, other.z) \
 
     def copy(self):
         return Coordinates((self.x, self.y, self.z))
@@ -171,7 +176,7 @@ class Graph:
     def to_string(self):
         strs = [elm.to_string() for elm in self.simplexes]
         return "\n".join(strs)
-    
+
     def get_map(self):
         map_faces = dict()
         for simp in self.simplexes_id:
