@@ -10,7 +10,12 @@ This project aims to build an end-to-end visualization program that implements t
 
 ## Project architecture
 
-This is a scheme of the project's main architecture.
+This is a schema of the project's main architecture.
+
+<p align="center">
+   <img src="https://i.imgur.com/QLArnUa.jpg" height="300px">
+</p>
+
 
 ## Format
 
