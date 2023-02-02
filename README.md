@@ -4,6 +4,10 @@ This project aims to build an end-to-end visualization program that implements t
 
 ---
 
+## Project architecture
+
+This is a scheme of the project's main architecture.
+
 ## Format
 
 The application generate CSV files containing coordinates from the given function.
