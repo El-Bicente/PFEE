@@ -47,12 +47,6 @@ ws_msf_dual_paths = {
     "output": "outputs/generated_vtp/output_msf_dual_ws.vtu"
 }
 
-csv_comp_dual_paths = {
-    "points" : "outputs/generated_csv/points_dual_comp.csv",
-    "lines" : "outputs/generated_csv/lines_dual_comp.csv",
-    "output": "outputs/generated_vtp/output_dual_graph_comp.vtu"
-}
-
 vector_paths = {
     "vectors" : "outputs/generated_csv/vectors.csv",
     "vectors_dir" : "outputs/generated_csv/vectors_dir.csv",
@@ -127,6 +121,7 @@ def main():
     start_time = time.time()
 
     seen_edges_pts = gradient_field_builder(dual_rev, vector_paths)
+    # Ultimate collapse
     ws_gvf_graph = watershed_gvf(graph, seen_edges_pts)
     ws_gvf_graph.convert_to_csv(ws_gvf_dual_paths)
 
@@ -138,8 +133,6 @@ def main():
     # Prim's MST Algorithm
     dual_mst, dual_mst_comp = networkx_mst(dual_rev, dual_minima)
     dual_mst.convert_to_csv(csv_mst_dual_paths)
-    dual_mst_comp.convert_to_csv(csv_comp_dual_paths)
-
     # Watershed
     watershed = watershed_msf(graph, dual_mst_comp)
     watershed.convert_to_csv(ws_msf_dual_paths)
@@ -152,7 +145,6 @@ def main():
     csv_to_vtp.build_graph_mesh(csv_dual_paths)
     csv_to_vtp.build_graph_mesh(csv_mst_dual_paths)
     csv_to_vtp.build_graph_mesh(ws_gvf_dual_paths)
-    csv_to_vtp.build_graph_mesh(csv_comp_dual_paths)
     csv_to_vtp.build_graph_mesh(ws_msf_dual_paths)
 
 if __name__ == "__main__":
