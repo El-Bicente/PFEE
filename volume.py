@@ -15,6 +15,6 @@ def wave_function(coords: Coordinates):
     return math.sin(math.sqrt((coords.x ** 2) + (coords.y ** 2) + (coords.z ** 2)))
 
 start_time = time.time()
-three_dim_function_to_csv2.main(step=1, size={'x': 10, 'y': 10, 'z': 10}, function=wave_function)
+three_dim_function_to_csv2.main(step=1, size={'x': 13, 'y': 2, 'z': 7}, paths=csv_paths, function=wave_function)
 print("--- %s seconds ---" % (time.time() - start_time))
 csv_to_vtp.main(csv_paths, generateTetras=True)

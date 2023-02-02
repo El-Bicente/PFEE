@@ -248,6 +248,18 @@ def get_local_faces(ids: np.array, pos: Coordinates, reversed: bool, function):
     return local_faces
 
 def get_local_tetras(ids: np.array, pos: Coordinates, reversed: bool, function):
+    """
+        description:
+            get the interlocking tetrahedras for the current cube
+        params:
+            ids: 3D numpy array of vertex's id. Coordinates of a vertex in the matrix 
+            represents the coordinates of a vertex in the final space
+            pos: current position of the cube it is building
+            reversed : does it need to create edges for a reverse cube or not ?
+            function: function to get the weight of each simplex
+        return:
+            interlocking tetrahedras
+    """
     if not reversed:
         local_tetras = [
             get_simplex_with_weight(ids, [(pos.z, pos.y, pos.x), (pos.z, pos.y, pos.x + 1), (pos.z, pos.y + 1, pos.x), (pos.z + 1, pos.y, pos.x)], function), # A, B, C, E
@@ -267,22 +279,80 @@ def get_local_tetras(ids: np.array, pos: Coordinates, reversed: bool, function):
 
     return local_tetras
 
-def save_volume_as_csv(vertices: list, edges: list, faces: list, tetras: list):
-    np.savetxt("function_to_csv/csv_files/3D/vertices.csv", np.asarray(vertices), delimiter=",", header="Node Number,X,Y,Z,Weight")
-    np.savetxt("function_to_csv/csv_files/3D/edges.csv", np.asarray(edges), delimiter=",", header="P1,P2,Weight")
-    np.savetxt("function_to_csv/csv_files/3D/faces.csv", np.asarray(faces), delimiter=",", header="S1,S2,S3,Weight")
-    np.savetxt("function_to_csv/csv_files/3D/tetras.csv", np.asarray(tetras), delimiter=",", header="S1,S2,S3,S4,Weight")
+def save_volume_as_csv(paths: dict, vertices: list, edges: list, faces: list, tetras: list):
+    """
+        description:
+            save the volume as csv
+        params:
+            vertices : list of vertices (id, x, y, z, weight)
+            edges : list of edges (id1, id2, weight)
+            faces : list of faces (id1, id2,, id3, weight)
+            tetras : list of tetrahedras (id1, id2,, id3, id4, weight)
+        return:
+           nothing
+    """
+    np.savetxt(paths["points"], np.asarray(vertices), delimiter=",", header="Node Number,X,Y,Z,Weight")
+    np.savetxt(paths["lines"], np.asarray(edges), delimiter=",", header="P1,P2,Weight")
+    np.savetxt(paths["triangles"], np.asarray(faces), delimiter=",", header="S1,S2,S3,Weight")
+    np.savetxt(paths["tetras"], np.asarray(tetras), delimiter=",", header="S1,S2,S3,S4,Weight")
+
+def is_reversed(pos: tuple, cell_status_board: np.array):
+    """
+        description:
+            get the status of a cube (if it is a reversed one or not).
+        params:
+            pos: current position of the cube it is building
+            cell_status_board: numpy array containing status for each cube
+        return:
+            cube status
+    """
+    x, y, z = pos
+
+    # If it is the first cell, because it will be the only one
+    # already initialized
+    if cell_status_board[z, y, x] is not None:
+        return cell_status_board[z, y, x]
+    
+    # Check only cells behind or on the right or under
+    # These are the only ones that could be initialized
+    # related to our path
+    if x > 0:
+        return not cell_status_board[z, y, x - 1]
+    elif y > 0:
+        return not cell_status_board[z, y - 1, x]
+    elif z > 0:
+        return not cell_status_board[z - 1, y, x]
+    
+    raise Exception(f"No neighbors has been found at pos {pos}")
 
 def build_volume(ids: np.array, function):
+    """
+        description:
+            Build the volume with an hardcoded way. Build each cube thanks to
+            the next cube in order to avoid checks at intersection to avoid to
+            create duplicates (edges and faces). Complete the missing faces, 
+            edges for each last cube of an axis.
+        params:
+            ids: Numpy array of ids for each vertices
+            function: function  to apply to get the weights
+        return:
+            edges, faces, tetrahedras to save
+    """
     reversed = False
     edges = []
     faces = []
     tetras = []
+
+    cell_status_board = np.full(ids.shape, None)
+    cell_status_board[0, 0, 0] = False
+
     for z in range(ids.shape[0]):
         for y in range(ids.shape[1]):
-            reversed = not reversed
             for x in range(ids.shape[2]):
                 current_pos = Coordinates((x, y, z))
+                reversed = is_reversed((x, y, z), cell_status_board)
+                cell_status_board[z, y, x] = reversed
+
                 if (x == (ids.shape[2] - 1)) and (y == (ids.shape[1] - 1) and (z == (ids.shape[0] - 1))):
                     continue
                 if (x == (ids.shape[2] - 1)) and (z == (ids.shape[0] - 1)):
@@ -322,11 +392,11 @@ def build_volume(ids: np.array, function):
     return edges, faces, tetras
     
 
-def main(step: int, size: dict, function):
+def main(step: int, size: dict, paths: dict, function):
     if (size := check_input(size)):
         ids, vertices = build_matrix_ids(size, step, function)
         edges, faces, tetras = build_volume(ids, function)
-        save_volume_as_csv(vertices, edges, faces, tetras)
+        save_volume_as_csv(paths, vertices, edges, faces, tetras)
 
 if __name__ == "__main__":
     main(size = {'x': 10, 'y': 10, 'z': 10})
