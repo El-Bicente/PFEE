@@ -95,7 +95,7 @@ def set_to_black(graph):
             simplex.weight = 0
     return graph
 
-def generate_video_vtp(graph, cpt):
+def generate_video_vtp(graph, cpt, dim):
     csv_video_path = {
             "points" : "reord/generate_video/reord_points.csv",
             "lines" : "reord/generate_video/reord_lines.csv",
@@ -103,7 +103,7 @@ def generate_video_vtp(graph, cpt):
             "output": f"reord/generate_video/file{cpt}.vtu"
         }
 
-    graph.convert_to_csv(csv_video_path)
+    graph.convert_to_csv(csv_video_path, dim)
     csv_to_vtp.main(csv_video_path)
 
 """
@@ -121,7 +121,7 @@ def supress_tuple_list(l, e, verif):
 """
 
 # Transform a given valued complex F into a 2-1 simplicial stack F_prime
-def reord_algorithm(F, video = False):
+def reord_algorithm(F, dim, video = False):
     # Initialization
     F_prime = deepcopy(F)
     deja_vu = get_minimas(F)
@@ -170,7 +170,7 @@ def reord_algorithm(F, video = False):
             F_prime.simplexes_id[b].weight = v
 
             if video:
-                generate_video_vtp(F_prime, cpt)
+                generate_video_vtp(F_prime, cpt, dim)
 
             # We look for the new edges to push
             for c in get_face_neighbors_reval(F, b):
@@ -202,23 +202,41 @@ def reord_algorithm(F, video = False):
 
     return F_prime, dual_minima
 
-def parse_csv(graph, paths):
+def parse_csv(graph, paths, dim):
     if ("points" in paths):
-        points = pd.read_csv(paths["points"])
+        points = pd.read_csv(paths["points"].format(dim=dim))
         for _, row in points.iterrows():
             coords = [Coordinates([row['X'], row['Y'], row['Z']])]
             graph.add_simplex(coords, row['Weight'])
 
     if ("lines" in paths):
-        lines = pd.read_csv(paths["lines"])
+        lines = pd.read_csv(paths["lines"].format(dim=dim))
         for _, row in lines.iterrows():
-            coords = [graph.simplexes[0][int(row['P1'])].coords[0], graph.simplexes[0][int(row['P2'])].coords[0]]
+            coords = [
+                graph.simplexes[0][int(row['P1'])].coords[0],
+                graph.simplexes[0][int(row['P2'])].coords[0]
+            ]
             graph.add_simplex(coords, row['Weight'])
 
     if ("triangles" in paths):
-        faces = pd.read_csv(paths["triangles"])
+        faces = pd.read_csv(paths["triangles"].format(dim=dim))
         for _, row in faces.iterrows():
-            coords = [graph.simplexes[0][int(row['S1'])].coords[0], graph.simplexes[0][int(row['S2'])].coords[0], graph.simplexes[0][int(row['S3'])].coords[0]]
+            coords = [
+                graph.simplexes[0][int(row['S1'])].coords[0], 
+                graph.simplexes[0][int(row['S2'])].coords[0], 
+                graph.simplexes[0][int(row['S3'])].coords[0]
+            ]
+            graph.add_simplex(coords, row['Weight'])
+
+    if ("tetras" in paths):
+        faces = pd.read_csv(paths["tetras"].format(dim=dim))
+        for _, row in faces.iterrows():
+            coords = [
+                graph.simplexes[0][int(row['S1'])].coords[0],
+                graph.simplexes[0][int(row['S2'])].coords[0],
+                graph.simplexes[0][int(row['S3'])].coords[0],
+                graph.simplexes[0][int(row['S4'])].coords[0]
+            ]
             graph.add_simplex(coords, row['Weight'])
 
     return graph
@@ -236,41 +254,43 @@ def find_minimas(graph, mode):
             if all(graph.simplexes_id[neighbor].weight != 0 and graph.simplexes_id[neighbor].weight >= graph.simplexes_id[faceId].weight for neighbor in neighbors):
                 graph.simplexes_id[faceId].weight = 0
 
-
+def is_border_vertex(vertex: Simplex, size: int, step: float):
+    min_bound = -(size * step) / 2
+    max_bound = -min_bound
+    return min_bound in vertex.coords[0] or max_bound in vertex.coords[0]
 
 # finding vertices on the border
-def set_border_as_minimas(graph):
+def set_border_as_minimas(graph, size, step):
     visited = set()
-    for i in range(len(graph.simplexes[0])):
-        vertexId = graph.simplexes[0][i].ID
-        if len(graph.adj[vertexId]) <= 9:
-            for neighborId in graph.adj[vertexId]:
-                if graph.simplexes_id[neighborId].order == 2:
+    for cur_vertex in graph.simplexes[0]:
+        if is_border_vertex(cur_vertex, size, step):
+            for neighborId in graph.adj[cur_vertex.ID]:
+                if graph.simplexes_id[neighborId].order == graph.order:
                     graph.simplexes_id[neighborId].weight = 0
                     visited.add(neighborId)
 
     return visited
 
 map_minima_path = {
-            "points" : "outputs/generated_csv/map_minima_points.csv",
-            "lines" : "outputs/generated_csv/map_minima_lines.csv",
-            "triangles" : "outputs/generated_csv/map_minima_triangles.csv",
-            "output": "outputs/generated_vtp/map_minima_output_graph.vtu"
-        }
+    "points" : "src/outputs/generated_csv/map_minima_points.csv",
+    "lines" : "src/outputs/generated_csv/map_minima_lines.csv",
+    "triangles" : "src/outputs/generated_csv/map_minima_triangles.csv",
+    "output": "src/outputs/generated_vtp/map_minima_output_graph.vtu"
+}
 
-def set_minimas(graph, mode, map=False):
+def set_minimas(graph, size, step, mode, dim, map=False):
 
     for simplex in graph.simplexes_id:
         simplex.weight += 100
 
 
-    set_border_as_minimas(graph)
+    set_border_as_minimas(graph, size=size, step=step)
     find_minimas(graph, mode)
 
     if map:
         copy = deepcopy(graph)
         map = set_to_black(copy)
-        copy.convert_to_csv(map_minima_path)
-        csv_to_vtp.build_graph_mesh(map_minima_path)
+        copy.convert_to_csv(map_minima_path, dim)
+        csv_to_vtp.build_graph_mesh(map_minima_path, dim)
 
     return graph

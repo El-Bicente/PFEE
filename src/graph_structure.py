@@ -79,7 +79,7 @@ class Graph:
         self.adj = []
 
 
-    def convert_to_csv(self, paths):
+    def convert_to_csv(self, paths, dim):
         df_points = []
         df_lines = []
         df_triangle = []
@@ -90,21 +90,19 @@ class Graph:
             df_points.append((i, smp.coords[0].x, smp.coords[0].y, smp.coords[0].z, smp.weight))
             pts_ids[smp.coords[0]] = i
 
-        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], paths["points"])
+        create_csv(df_points, ["Node Number", "X", "Y", "Z", "Weight"], paths["points"].format(dim=dim))
 
         if ("lines" in paths):
             for i in range (len(self.simplexes[1])):
                 smp = self.simplexes[1][i]
                 df_lines.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], smp.weight))
-            create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"])
+            create_csv(df_lines, ["P1", "P2", "Weight"], paths["lines"].format(dim=dim))
 
         if ("triangles" in paths):
             for i in range (len(self.simplexes[2])):
                 smp = self.simplexes[2][i]
                 df_triangle.append((pts_ids[smp.coords[0]], pts_ids[smp.coords[1]], pts_ids[smp.coords[2]], smp.weight))
-            create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], paths["triangles"])
-
-        return
+            create_csv(df_triangle, ["S1", "S2", "S3", "Weight"], paths["triangles"].format(dim=dim))
 
     def create_dual(self):
         res = Graph(1)
@@ -142,7 +140,6 @@ class Graph:
         self.simplexes[simplex.order].append(simplex)
 
         self.adj.append([])
-
 
         for smp_orders in self.simplexes:
             if smp_orders != simplex.order:

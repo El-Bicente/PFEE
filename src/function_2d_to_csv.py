@@ -5,7 +5,7 @@ import pandas as pd
 import math
 import numpy as np
 
-def build_points(f, step, size):
+def build_points(f, step, size, path):
     spacing = step
     spacing_height = math.sqrt(step**2-(step/2)**2)
     point_ids = np.zeros((size * 2 + 1,size * 2 + 1)).astype("int")
@@ -20,7 +20,7 @@ def build_points(f, step, size):
             id_cpt += 1
     df = pd.DataFrame(csv)
     df.columns = ["Node Number", "X", "Y", "Z", "Weight"]
-    df.to_csv("outputs/generated_csv/points.csv", index=False)
+    df.to_csv(path, index=False)
     return point_ids, df
 
 def calculate_mid_line(points_df, id1, id2):
@@ -32,7 +32,7 @@ def calculate_mid_line(points_df, id1, id2):
     ym = y1 + (y2 - y1) / 2
     return (xm, ym)
 
-def build_lines(point_ids, points_df, f, size):
+def build_lines(point_ids, points_df, f, size, path):
     csv = []
     for i in range (point_ids.shape[0]):
         for j in range (point_ids.shape[1]):
@@ -51,13 +51,13 @@ def build_lines(point_ids, points_df, f, size):
                     csv.append((point_ids[i, j + 1], point_ids[i + 1, j], f(mid_coord[0], mid_coord[1])))
     df = pd.DataFrame(csv)
     df.columns = ["P1", "P2", "Weight"]
-    df.to_csv("outputs/generated_csv/lines.csv", index=False)
+    df.to_csv(path, index=False)
     return df
 
 def get_id(key, lines_df):
     return int(lines_df[(lines_df.P1 == key[0]) & (lines_df.P2 == key[1])].values[0][0])
 
-def build_triangle(point_ids, lines_df, step, points_df, f, size):
+def build_triangle(point_ids, step, points_df, f, size, path):
     csv = []
     #H: Hauteur du triangle
     #C1: Taille d'un coté
@@ -82,10 +82,10 @@ def build_triangle(point_ids, lines_df, step, points_df, f, size):
                     csv.append((point_ids[i + 1, j], point_ids[i, j + 1], point_ids[i + 1, j + 1], f(cent_coord2[0], cent_coord2[1])))
     df = pd.DataFrame(csv)
     df.columns = ["S1", "S2", "S3", "Weight"]
-    df.to_csv("outputs/generated_csv/triangles.csv", index=False)
+    df.to_csv(path, index=False)
     return df
 
-def main(step, size, function):
+def main(step, size, function, paths, dim):
     """
     step : Step between 2 points
     size : Size of the grid
@@ -94,6 +94,6 @@ def main(step, size, function):
                     Axis y: (-10, 10)
     """
 
-    point_ids, points_df = build_points(function, step, size)
-    lines_df = build_lines(point_ids, points_df, function, size)
-    build_triangle(point_ids, lines_df, step, points_df, function, size)
+    point_ids, points_df = build_points(function, step, size, paths["points"].format(dim=dim))
+    build_lines(point_ids, points_df, function, size, paths["lines"].format(dim=dim))
+    build_triangle(point_ids, step, points_df, function, size, paths["triangles"].format(dim=dim))

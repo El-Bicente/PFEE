@@ -164,27 +164,27 @@ def build_glyph(vectors_pts, vectors_dir, output_file='format/generated_vtp/outp
 
 
 
-def build_graph_mesh(paths):
+def build_graph_mesh(paths, dim):
     if ("points" not in paths or "lines" not in paths):
         return
 
-    points = pd.read_csv(paths["points"])
-    lines = pd.read_csv(paths["lines"])
+    points = pd.read_csv(paths["points"].format(dim=dim))
+    lines = pd.read_csv(paths["lines"].format(dim=dim))
 
     faces = pd.DataFrame([])
     if "triangles" in paths:
-        faces = pd.read_csv(paths["triangles"])
+        faces = pd.read_csv(paths["triangles"].format(dim=dim))
 
     tetras = pd.DataFrame([])
     if "tetras" in paths:
-        tetras = pd.read_csv(paths["tetras"])
+        tetras = pd.read_csv(paths["tetras"].format(dim=dim))
 
-    build_mesh(faces, points, lines, tetras, paths["output"])
+    build_mesh(faces, points, lines, tetras, paths["output"].format(dim=dim))
 
-def build_vector_glyph(paths):
+def build_vector_glyph(paths, dim):
     if "vectors" not in paths or "vectors_dir" not in paths:
         return
-    vectors_pts = pd.read_csv(paths["vectors"])
-    vectors_dir = pd.read_csv(paths["vectors_dir"])
+    vectors_pts = pd.read_csv(paths["vectors"].format(dim=dim))
+    vectors_dir = pd.read_csv(paths["vectors_dir"].format(dim=dim))
 
-    build_glyph(vectors_pts, vectors_dir, paths["output"])
+    build_glyph(vectors_pts, vectors_dir, paths["output"].format(dim=dim))

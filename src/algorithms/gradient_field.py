@@ -14,7 +14,7 @@ def watershed_gvf(primal: Graph, seen_edges_pts):
 
     return ws_graph
 
-def gradient_field_builder(dual_graph: Graph, paths):
+def gradient_field_builder(dual_graph: Graph, paths, dim):
     csv_vector_file = ",X,Y,Z\n"
     csv_vector_dir_file = ",X,Y,Z\n"
     vector_id = 0
@@ -43,10 +43,10 @@ def gradient_field_builder(dual_graph: Graph, paths):
             seen_edges_pts.append(smp.get_centroid())
             vector_id += 1
 
-    with open(paths["vectors"], "w") as vectors_file:
+    with open(paths["vectors"].format(dim=dim), "w") as vectors_file:
         vectors_file.write(csv_vector_file)
 
-    with open(paths["vectors_dir"], "w") as vectors_dir_file:
+    with open(paths["vectors_dir"].format(dim=dim), "w") as vectors_dir_file:
         vectors_dir_file.write(csv_vector_dir_file)
 
     return seen_edges_pts
